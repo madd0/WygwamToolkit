@@ -101,36 +101,18 @@ namespace WygwamToolkit.Common.Managers
         #endregion
 
         #region virtual
-        protected virtual async Task<bool> SavePlatformAsync(string key, object data)
-        {
-            throw new PlatformNotSupportedException("You need to override the method in the platform");
-        }
+        protected abstract Task<bool> SavePlatformAsync(string key, object data);
 
-        protected virtual async Task<T> LoadPlatformAsync<T>(string key)
-        {
-            throw new PlatformNotSupportedException("You need to override the method in the platform");
-        }
+        protected abstract Task<T> LoadPlatformAsync<T>(string key);
 
-        protected virtual async Task<bool> ClearPlatformAsync(string key)
-        {
-            throw new PlatformNotSupportedException("You need to override the method in the platform");
-        }
+        protected abstract Task<bool> ClearPlatformAsync(string key);
 
 
-        protected virtual async Task<bool> SaveDataPlatformAsync(string path, object data)
-        {
-            throw new PlatformNotSupportedException("You need to override the method in the platform");
-        }
+        protected abstract Task<bool> SaveDataPlatformAsync(string path, object data);
 
-        protected virtual async Task<T> LoadDataPlatformAsync<T>(string path)
-        {
-            throw new PlatformNotSupportedException("You need to override the method in the platform");
-        }
+        protected abstract Task<T> LoadDataPlatformAsync<T>(string path);
 
-        protected virtual async Task<bool> ClearDataPlatformAsync(string path)
-        {
-            throw new PlatformNotSupportedException("You need to override the method in the platform");
-        }
+        protected abstract Task<bool> ClearDataPlatformAsync(string path);
         #endregion
     }
 }
