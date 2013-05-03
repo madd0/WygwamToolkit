@@ -9,7 +9,7 @@ using WygwamToolkit.Common.Managers;
 
 namespace WygwamToolkit.Phone.Managers
 {
-    public class NetworkManager : ANetworkManager
+    public class NetworkManager : Wygwam.Windows.Networking.NetworkManager
     {
         public override bool IsNetworkAvailable
         {
@@ -21,7 +21,12 @@ namespace WygwamToolkit.Phone.Managers
 
         public NetworkManager()
         {
-            NetworkInformation.NetworkStatusChanged += NetworkInformation_NetworkStatusChanged;
+            NetworkInformation.NetworkStatusChanged += OnNetworkStatusChanged;
+        }
+
+        protected override Wygwam.Windows.Networking.NetworkChangedEventArgs GetCurrentNetworkStatus(object sender)
+        {
+            throw new NotImplementedException();
         }
     }
 }

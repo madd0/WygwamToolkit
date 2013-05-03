@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WygwamToolkit.WinRT")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Wygwam.Windows.WinRT")]
+[assembly: AssemblyDescription("A toolkit for WinRT development.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WygwamToolkit.WinRT")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyCompany("Wygwam")]
+[assembly: AssemblyProduct("Wygwam.Windows.WinRT")]
+[assembly: AssemblyCopyright("Copyright © 2013 Wygwam")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

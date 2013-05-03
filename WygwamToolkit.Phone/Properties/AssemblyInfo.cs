@@ -6,12 +6,12 @@ using System.Resources;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WygwamToolkit.Phone")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Wygwam.Windows.Phone")]
+[assembly: AssemblyDescription("A toolkit for Windows Phone development.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WygwamToolkit.Phone")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyCompany("Wygwam")]
+[assembly: AssemblyProduct("Wygwam.Windows.Phone")]
+[assembly: AssemblyCopyright("Copyright © 2013 Wygwam")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
