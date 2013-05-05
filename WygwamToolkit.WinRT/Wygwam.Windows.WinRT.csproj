@@ -106,6 +106,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\SelectableListView.cs" />
     <Compile Include="Managers\LocationManager.cs" />
     <Compile Include="Managers\NetworkManager.cs" />
     <Compile Include="Managers\StorageManager.cs" />

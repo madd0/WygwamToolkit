@@ -36,6 +36,9 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BindableBase.cs" />
+    <Compile Include="Input\AsyncDelegateCommand.cs" />
+    <Compile Include="Input\AsyncDelegateCommand{T}.cs" />
     <Compile Include="Managers\ILocationManager.cs" />
     <Compile Include="Networking\InternetConnectionType.cs" />
     <Compile Include="Networking\NetworkChangedEventArgs.cs" />
@@ -43,6 +46,9 @@
     <Compile Include="Managers\AStorageManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\AsyncSemaphore.cs" />
+    <Compile Include="ViewModels\SelectableItemChangedEventArgs.cs" />
+    <Compile Include="ViewModels\SelectableListItem{T}.cs" />
+    <Compile Include="ViewModels\SelectableList{T}.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -28,5 +28,10 @@ namespace WygwamToolkit.Phone.Managers
         {
             throw new NotImplementedException();
         }
+
+        public override Wygwam.Windows.Networking.InternetConnectionType ConnectionType
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }
