@@ -46,6 +46,7 @@
     <Compile Include="Managers\AStorageManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\AsyncSemaphore.cs" />
+    <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\SelectableItemChangedEventArgs.cs" />
     <Compile Include="ViewModels\SelectableItem{T}.cs" />
     <Compile Include="ViewModels\SelectableList{T}.cs" />
