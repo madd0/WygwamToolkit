@@ -73,20 +73,20 @@ namespace Wygwam.Windows
 
             try
             {
-                this.RaiseCanExecuteChange();
+                this.RaiseCanExecuteChanged();
                 await _execute((T)parameter);
             }
             finally
             {
                 _isRunning = false;
-                this.RaiseCanExecuteChange();
+                this.RaiseCanExecuteChanged();
             }
         }
 
         /// <summary>
         /// Raises the can execute change.
         /// </summary>
-        public void RaiseCanExecuteChange()
+        public void RaiseCanExecuteChanged()
         {
             this.OnCanExecuteChanged(EventArgs.Empty);
         }
