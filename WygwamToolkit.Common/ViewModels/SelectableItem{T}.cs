@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="SelectableListItem{T}.cs" company="Wygwam">
+// <copyright file="SelectableItem{T}.cs" company="Wygwam">
 //     Copyright (c) 2013 Wygwam.
 //     Licensed under the Microsoft Public License (Ms-PL) (the "License");
 //     you may not use this file except in compliance with the License.
@@ -14,23 +14,26 @@
 //     limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
+
 namespace Wygwam.Windows.ViewModels
 {
     /// <summary>
     /// Used as a view model to provide items to lists.
     /// </summary>
     /// <typeparam name="T">The type of the item.</typeparam>
-    public class SelectableListItem<T> : BindableBase
+    public class SelectableItem<T> : BindableBase
     {
         private bool _isSelected;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:SelectableListItem"/> class.
+        /// Initializes a new instance of the <see cref="SelectableItem{T}" /> class.
         /// </summary>
-        public SelectableListItem(T item, bool isSelected = false)
+        /// <param name="item">The item to be stored.</param>
+        /// <param name="isSelected">if set to <c>true</c>, the item will be selected by default.</param>
+        public SelectableItem(T item, bool isSelected = false)
         {
             this.Item = item;
-            this.IsSelected = IsSelected;
+            this.IsSelected = isSelected;
         }
 
         /// <summary>

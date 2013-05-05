@@ -19,20 +19,20 @@ namespace Wygwam.Windows.ViewModels
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Collections.Specialized;
     using System.ComponentModel;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     /// <summary>
-    /// TODO: Provide summary section in the documentation header.
+    /// An <see cref="System.Collections.ObjectModel.ObservableCollection{T}" /> that tracks
+    /// instances of <see cref="SelectableItem{T}" /> and raises the <see cref="E:SelectedItemsChanged" />
+    /// event when the selection changes.
     /// </summary>
-    public class SelectableList<T> : ObservableCollection<SelectableListItem<T>>
+    /// <typeparam name="T">The type of the items stored in each <see cref="SelectableItem{T}" />.</typeparam>
+    public class SelectableList<T> : ObservableCollection<SelectableItem<T>>
     {
-        public event EventHandler<SelectableItemChangedEventArgs<T>> SelectedItemsChanged;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:SelectableList"/> class.
+        /// Initializes a new instance of the <see cref="SelectableList{T}" /> class.
         /// </summary>
         public SelectableList()
             : base()
@@ -40,47 +40,66 @@ namespace Wygwam.Windows.ViewModels
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:SelectableList"/> class.
+        /// Initializes a new instance of the <see cref="SelectableList{T}" /> class that contains elements
+        /// copied from the specified collection.
         /// </summary>
-        public SelectableList(IEnumerable<SelectableListItem<T>> collection)
+        /// <param name="collection">The collection from which elements are copied.</param>
+        public SelectableList(IEnumerable<SelectableItem<T>> collection)
             : base(collection)
         {
             foreach (var item in collection)
             {
-                item.PropertyChanged += OnItemPropertyChanged;
+                item.PropertyChanged += this.OnItemPropertyChanged;
             }
         }
 
-        public IEnumerable<T> SelectedItems
+        /// <summary>
+        /// Occurs when an item from the collection is selected or deselected.
+        /// </summary>
+        public event EventHandler<SelectableItemChangedEventArgs<T>> SelectedItemsChanged;
+
+        /// <summary>
+        /// Gets a list of selected items.
+        /// </summary>
+        public IList<T> SelectedItems
         {
             get
             {
-                return this.Where(si => si.IsSelected).Select(si => si.Item);
+                return this.Where(si => si.IsSelected).Select(si => si.Item).ToList();
             }
         }
 
+        /// <summary>
+        /// Called when the <see cref="E:CollectionChanged" /> event is raised by the base class,
+        /// this is where the collection subscribes to the PropertyChanged event of its items.
+        /// </summary>
+        /// <param name="e">The <see cref="System.Collections.Specialized.NotifyCollectionChangedEventArgs"/> instance containing the event data.</param>
         protected override void OnCollectionChanged(System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             base.OnCollectionChanged(e);
 
-            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                foreach (var item in e.NewItems.Cast<SelectableListItem<T>>())
+                foreach (var item in e.NewItems.Cast<SelectableItem<T>>())
                 {
-                    item.PropertyChanged += OnItemPropertyChanged;
+                    item.PropertyChanged += this.OnItemPropertyChanged;
                 }
             }
-            else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove ||
-                e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Replace ||
-                e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            else if (e.Action == NotifyCollectionChangedAction.Remove ||
+                     e.Action == NotifyCollectionChangedAction.Replace ||
+                     e.Action == NotifyCollectionChangedAction.Reset)
             {
-                foreach (var item in e.OldItems.Cast<SelectableListItem<T>>())
+                foreach (var item in e.OldItems.Cast<SelectableItem<T>>())
                 {
-                    item.PropertyChanged -= OnItemPropertyChanged;
+                    item.PropertyChanged -= this.OnItemPropertyChanged;
                 }
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:SelectedItemsChanged"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="SelectableItemChangedEventArgs"/> instance containing the event data.</param>
         protected void OnSelectedItemsChanged(SelectableItemChangedEventArgs<T> e)
         {
             var handler = this.SelectedItemsChanged;
@@ -91,12 +110,18 @@ namespace Wygwam.Windows.ViewModels
             }
         }
 
+        /// <summary>
+        /// Called when a property of an item changed. Raises the <see cref="E:SelectedItemsChanged"/> if
+        /// the property is <c>IsSelected</c>.
+        /// </summary>
+        /// <param name="sender">The item whose property changed.</param>
+        /// <param name="e">The <see cref="PropertyChangedEventArgs"/> instance containing the event data.</param>
         private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            this.OnSelectedItemsChanged(new SelectableItemChangedEventArgs<T>
-                {
-                    ChangedItem = sender as SelectableListItem<T>
-                });
+            if (e.PropertyName.Equals("IsSelected", StringComparison.Ordinal))
+            {
+                this.OnSelectedItemsChanged(new SelectableItemChangedEventArgs<T>(sender as SelectableItem<T>));
+            }
         }
     }
 }
