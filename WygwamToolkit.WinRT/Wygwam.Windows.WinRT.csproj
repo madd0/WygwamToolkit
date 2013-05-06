@@ -108,10 +108,19 @@
   <ItemGroup>
     <Compile Include="Controls\BasePage.cs" />
     <Compile Include="Controls\BindableSelectionListView.cs" />
+    <Compile Include="Controls\ExtendedSplashScreen.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Managers\LocationManager.cs" />
     <Compile Include="Managers\NetworkManager.cs" />
     <Compile Include="Managers\StorageManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '11.0' ">
     <VisualStudioVersion>11.0</VisualStudioVersion>
