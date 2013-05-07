@@ -87,6 +87,7 @@
     <Compile Include="Managers\NetworkManager.cs" />
     <Compile Include="Managers\StorageManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Timer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WygwamToolkit.Common\Wygwam.Windows.csproj">
