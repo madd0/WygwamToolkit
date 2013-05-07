@@ -26,7 +26,7 @@ namespace Wygwam.Windows
     /// The delegates passed to this class support command parameters.
     /// </summary>
     /// <typeparam name="T">The of the parameter passed to the delegates when the command is invoked.</typeparam>
-    public class AsyncDelegateCommand<T> : ICommand
+    public class AsyncDelegateCommand<T> : ICommand, IAsyncExecutable
     {
         private Func<T, bool> _canExecute;
         private Func<T, Task> _execute;

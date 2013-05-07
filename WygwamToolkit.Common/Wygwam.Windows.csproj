@@ -37,10 +37,10 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncEventHandler{T}.cs" />
     <Compile Include="BindableBase.cs" />
     <Compile Include="Input\AsyncDelegateCommand.cs" />
     <Compile Include="Input\AsyncDelegateCommand{T}.cs" />
+    <Compile Include="Input\IAsyncExecutable.cs" />
     <Compile Include="Managers\ILocationManager.cs" />
     <Compile Include="Networking\InternetConnectionType.cs" />
     <Compile Include="Networking\NetworkChangedEventArgs.cs" />

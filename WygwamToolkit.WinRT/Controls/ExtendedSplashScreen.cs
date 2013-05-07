@@ -109,13 +109,18 @@ namespace Wygwam.Windows.Controls
         }
 
         /// <summary>
-        /// Occurs when loading must begin.
+        /// Gets or sets the loading operation.
         /// </summary>
-        /// <remarks><para>This event is raised when the system splash screen has been dismissed. Your event handler will
-        /// be called in order to perform loading operations.</para>
-        /// <para>You can also use the class's <see cref="P:Command"/> property to execute loading operations.</para></remarks>
-        /// <seealso cref="P:Command"/>
-        public event AsyncEventHandler<bool> DoLoading;
+        /// <value>
+        /// The loading operation.
+        /// </value>
+        /// <seealso cref="P:Command" />
+        /// <remarks>
+        ///   <para>This delegate will be called when the system splash screen has been dismissed
+        /// in order to perform loading operations.</para>
+        ///   <para>You can also use the class's <see cref="P:Command" /> property to execute loading operations.</para>
+        /// </remarks>
+        public Func<bool, Task> LoadingOperation { get; set; }
 
         /// <summary>
         /// Gets or sets an object containing details about the launch request and process.
@@ -240,7 +245,7 @@ namespace Wygwam.Windows.Controls
         /// </summary>
         private void PositionImage()
         {
-            if (_splashScreenImage != null)
+            if (_splashScreenImage != null && _splashScreen != null)
             {
                 var imgPos = _splashScreen.ImageLocation;
 
@@ -282,7 +287,7 @@ namespace Wygwam.Windows.Controls
         /// <param name="e">The event data.</param>
         private async void OnSplashScreenDismissed(SplashScreen sender, object e)
         {
-            await (await this.PerformLoadingActionAsync()).ContinueWith(
+            await this.PerformLoadingActionAsync().ContinueWith(
                 _ =>
                 {
                     var rootFrame = new Frame();
@@ -302,34 +307,31 @@ namespace Wygwam.Windows.Controls
         /// <see cref="P:Command" /> have finished executing.
         /// </returns>
         /// <remarks>
-        ///   <para>This method will call any event handler listening to the <see cref="E:DoLoading" /> event
+        ///   <para>This method will call any event handler listening to the <see cref="P:LoadingOperation" /> event
         /// as well as execute the <see cref="P:Command" /> if one has been assigned.</para>
         ///   <para>Both operations are performed on the UI thread to make UI updates less complex.</para>
         /// </remarks>
-        private async Task<Task> PerformLoadingActionAsync()
+        private async Task PerformLoadingActionAsync()
         {
             TaskFactory uiFactory = new TaskFactory(_uiScheduler);
 
-            Task evenHandlerTask = await uiFactory.StartNew(() => this.OnDoLoading(_mustLoadPreviousRunningState));
-            Task commandTask = await uiFactory.StartNew(() => this.ExecuteCommand());
+            Task<Task> evenHandlerTask = uiFactory.StartNew(() =>
+                {
+                    if (this.LoadingOperation != null)
+                    {
+                        return this.LoadingOperation(_mustLoadPreviousRunningState);
+                    }
+                    else
+                    {
+                        return Task.FromResult(false);
+                    }
+                });
 
-            return Task.WhenAll(evenHandlerTask, commandTask);
-        }
+            Task<Task> commandTask = uiFactory.StartNew(() => this.ExecuteCommand());
 
-        /// <summary>
-        /// Called when loading starts.
-        /// </summary>
-        /// <param name="mustLoadPreviousRunningState">if set to <c>true</c>, event handlers should load the applications
-        /// previous running state.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task" /> to simplify asynchronous programming.</returns>
-        private async Task OnDoLoading(bool mustLoadPreviousRunningState)
-        {
-            var handler = this.DoLoading;
-
-            if (handler != null)
-            {
-                await handler(this, mustLoadPreviousRunningState);
-            }
+            await Task.WhenAll(
+                await evenHandlerTask,
+                await commandTask);
         }
 
         /// <summary>
@@ -345,13 +347,13 @@ namespace Wygwam.Windows.Controls
         /// </remarks>
         private async Task ExecuteCommand()
         {
-            var cmd = this.Command as AsyncDelegateCommand;
+            IAsyncExecutable asyncCommand;
 
             if (this.Command != null)
             {
-                if (cmd != null)
+                if ((asyncCommand = this.Command as IAsyncExecutable) != null)
                 {
-                    await cmd.ExecuteAsync(this.CommandParameter);
+                    await asyncCommand.ExecuteAsync(this.CommandParameter);
                 }
                 else
                 {
