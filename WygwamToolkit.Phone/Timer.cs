@@ -12,7 +12,7 @@
 // </license>
 //-----------------------------------------------------------------------
 
-namespace Wygwam.Windows.Phone
+namespace Wygwam.Windows
 {
     using System;
     using System.Windows.Threading;

@@ -12,7 +12,7 @@
 // </license>
 //-----------------------------------------------------------------------
 
-namespace Wygwam.Windows.WinRT
+namespace Wygwam.Windows
 {
     using global::Windows.UI.Xaml;
     using System;
