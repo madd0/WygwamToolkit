@@ -21,7 +21,7 @@
                                        Padding="5" HorizontalAlignment="Center" Text="{TemplateBinding Message}" />
                             <ProgressRing x:Name="ProgressRing" HorizontalAlignment="Center"
                                           Foreground="{TemplateBinding Foreground}"
-                                          IsActive="{TemplateBinding IsWaiting}"/>
+                                          IsActive="{TemplateBinding IsLoading}"/>
                         </StackPanel>
                     </Grid>
                 </ControlTemplate>

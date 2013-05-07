@@ -69,6 +69,17 @@ namespace Wygwam.Windows
         /// this object can be set to null.</param>
         public async void Execute(object parameter)
         {
+            await this.ExecuteAsync(parameter);
+        }
+
+        /// <summary>
+        /// Defines the method to be called asynchronously when the command is invoked.
+        /// </summary>
+        /// <param name="parameter">Data used by the command. If the command does not require data to be passed,
+        /// this object can be set to null.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task"/> to help with asynchronous programming.</returns>
+        public async Task ExecuteAsync(object parameter)
+        {
             _isRunning = true;
 
             try
