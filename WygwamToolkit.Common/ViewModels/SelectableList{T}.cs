@@ -70,18 +70,6 @@ namespace Wygwam.Windows.ViewModels
         }
 
         /// <summary>
-        /// Adds a range of items to the collection.
-        /// </summary>
-        /// <param name="collection">The collection of items to add.</param>
-        public void AddRange(IEnumerable<SelectableItem<T>> collection)
-        {
-            foreach (var item in collection)
-            {
-                this.Add(item);
-            }
-        }
-
-        /// <summary>
         /// Called when the <see cref="E:CollectionChanged" /> event is raised by the base class,
         /// this is where the collection subscribes to the PropertyChanged event of its items.
         /// </summary>

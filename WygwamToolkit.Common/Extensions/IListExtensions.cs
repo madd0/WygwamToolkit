@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IAsyncExecutable.cs" company="Wygwam">
+// <copyright file="IListExtensions.cs" company="Wygwam">
 //     Copyright (c) 2013 Wygwam.
 //     Licensed under the Microsoft Public License (Ms-PL) (the "License");
 //     you may not use this file except in compliance with the License.
@@ -17,20 +17,25 @@
 
 namespace Wygwam.Windows
 {
-    using System.Threading.Tasks;
+    using System.Collections.Generic;
 
     /// <summary>
-    /// Provides a <see cref="M:ExecuteAsync"/> method. Serves as a base to
-    /// <see cref="T:AsyncDelegateCommand{T}"/> and <see cref="T:AsyncDelegateCommand"/>.
+    /// Provides extension methods for <see cref="System.Collections.Generic.IList{T}"/>.
     /// </summary>
-    public interface IAsyncExecutable
+    public static class IListExtensions
     {
         /// <summary>
-        /// Defines the method to be called asynchronously when the command is invoked.
+        /// Adds a range of items to a list.
         /// </summary>
-        /// <param name="parameter">Data used by the command. If the command does not require data to be passed,
-        /// this object can be set to <c>null</c>.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task"/> to help with asynchronous programming.</returns>
-        Task ExecuteAsync(object parameter);
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <param name="list">The list to which items will be added.</param>
+        /// <param name="range">The range of items to add.</param>
+        public static void AddRange<T>(this IList<T> list, IEnumerable<T> range)
+        {
+            foreach (var item in range)
+            {
+                list.Add(item);
+            }
+        }
     }
 }
