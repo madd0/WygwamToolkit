@@ -51,7 +51,7 @@
     <Compile Include="Tools\AsyncSemaphore.cs" />
     <Compile Include="Tools\ITimer.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
-    <Compile Include="ViewModels\SelectableItemChangedEventArgs.cs" />
+    <Compile Include="ViewModels\SelectableItemChangedEventArgs{T}.cs" />
     <Compile Include="ViewModels\SelectableItem{T}.cs" />
     <Compile Include="ViewModels\SelectableList{T}.cs" />
   </ItemGroup>

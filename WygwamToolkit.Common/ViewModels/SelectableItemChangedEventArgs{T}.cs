@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="SelectableItemChangedEventArgs.cs" company="Wygwam">
+// <copyright file="SelectableItemChangedEventArgs{T}.cs" company="Wygwam">
 //     Copyright (c) 2013 Wygwam.
 //     Licensed under the Microsoft Public License (Ms-PL) (the "License");
 //     you may not use this file except in compliance with the License.

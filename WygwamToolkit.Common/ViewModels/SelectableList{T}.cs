@@ -31,12 +31,17 @@ namespace Wygwam.Windows.ViewModels
     /// <typeparam name="T">The type of the items stored in each <see cref="SelectableItem{T}" />.</typeparam>
     public class SelectableList<T> : ObservableCollection<SelectableItem<T>>
     {
+        private List<int> _selectedItemsIndexes;
+        private ObservableCollection<T> _selectedItems;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectableList{T}" /> class.
         /// </summary>
         public SelectableList()
             : base()
         {
+            _selectedItems = new ObservableCollection<T>();
+            _selectedItemsIndexes = new List<int>();
         }
 
         /// <summary>
@@ -61,11 +66,11 @@ namespace Wygwam.Windows.ViewModels
         /// <summary>
         /// Gets a list of selected items.
         /// </summary>
-        public IList<T> SelectedItems
+        public ObservableCollection<T> SelectedItems
         {
             get
             {
-                return this.Where(si => si.IsSelected).Select(si => si.Item).ToList();
+                return _selectedItems;
             }
         }
 
@@ -99,10 +104,38 @@ namespace Wygwam.Windows.ViewModels
         /// <summary>
         /// Raises the <see cref="E:SelectedItemsChanged"/> event.
         /// </summary>
-        /// <param name="e">The <see cref="SelectableItemChangedEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="SelectableItemChangedEventArgs{T}"/> instance containing the event data.</param>
         protected void OnSelectedItemsChanged(SelectableItemChangedEventArgs<T> e)
         {
             var handler = this.SelectedItemsChanged;
+
+            var idx = this.IndexOf(e.ChangedItem);
+
+            if (!e.ChangedItem.IsSelected)
+            {
+                _selectedItemsIndexes.Remove(idx);
+                _selectedItems.Remove(e.ChangedItem.Item);
+            }
+            else
+            {
+                if (_selectedItemsIndexes.Count == 0 || _selectedItemsIndexes[_selectedItemsIndexes.Count - 1] < idx)
+                {
+                    _selectedItemsIndexes.Add(idx);
+                    _selectedItems.Add(e.ChangedItem.Item);
+                }
+                else if (_selectedItemsIndexes[0] > idx)
+                {
+                    _selectedItemsIndexes.Insert(0, idx);
+                    _selectedItems.Insert(0, e.ChangedItem.Item);
+                }
+                else
+                {
+                    int indexOfNextGreatest = _selectedItemsIndexes.IndexOf(_selectedItemsIndexes.Where(i => i > idx).First());
+
+                    _selectedItemsIndexes.Insert(indexOfNextGreatest, idx);
+                    _selectedItems.Insert(indexOfNextGreatest, e.ChangedItem.Item);
+                }
+            }
 
             if (handler != null)
             {

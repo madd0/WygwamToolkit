@@ -109,6 +109,7 @@
   <ItemGroup>
     <Compile Include="Controls\BasePage.cs" />
     <Compile Include="Controls\BindableSelectionListView.cs" />
+    <Compile Include="Controls\BindableSelectionGridView.cs" />
     <Compile Include="Controls\ExtendedSplashScreen.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
