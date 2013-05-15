@@ -25,9 +25,26 @@ namespace Wygwam.Windows.Storage
     /// </summary>
     public abstract class StorageManager
     {
-        private readonly IDataSerializer _defaultSerializer = new XmlDataSerializer();
+        private readonly IDataSerializer _defaultSerializer;
 
         private readonly AsyncLock _lock = new AsyncLock();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StorageManager"/> class.
+        /// </summary>
+        public StorageManager()
+            : this(new XmlDataSerializer())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StorageManager"/> class.
+        /// </summary>
+        /// <param name="defaultSerializer">The default serializer.</param>
+        public StorageManager(IDataSerializer defaultSerializer)
+        {
+            _defaultSerializer = defaultSerializer;
+        }
 
         /// <summary>
         /// Saves a key-value pair to a settings container.

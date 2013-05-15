@@ -17,11 +17,10 @@
 
 namespace Wygwam.Windows.Phone
 {
-    using System;
     using System.IO;
     using System.IO.IsolatedStorage;
     using System.Threading.Tasks;
-    using System.Xml.Serialization;
+    using Wygwam.Windows.Storage;
 
     /// <summary>
     /// Extends <see cref="Wygwam.Windows.Storage.StorageManager"/> to store settings and objects in isolated storage.
@@ -29,6 +28,23 @@ namespace Wygwam.Windows.Phone
     public class StorageManager : Wygwam.Windows.Storage.StorageManager
     {
         private static readonly IsolatedStorageSettings _applicationSettings = IsolatedStorageSettings.ApplicationSettings;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StorageManager"/> class.
+        /// </summary>
+        public StorageManager()
+            : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StorageManager"/> class.
+        /// </summary>
+        /// <param name="defaultSerializer">The default serializer.</param>
+        public StorageManager(IDataSerializer defaultSerializer)
+            : base(defaultSerializer)
+        {
+        }
 
         /// <summary>
         /// Called when <see cref="M:SaveSettingAsync" /> is executed to store data in the settings container.
