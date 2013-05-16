@@ -55,6 +55,8 @@ namespace Wygwam.Windows.ViewModels
             foreach (var item in collection)
             {
                 item.PropertyChanged += this.OnItemPropertyChanged;
+
+                this.UpdateSelectedItemsList(item);
             }
         }
 
@@ -109,37 +111,47 @@ namespace Wygwam.Windows.ViewModels
         {
             var handler = this.SelectedItemsChanged;
 
-            var idx = this.IndexOf(e.ChangedItem);
+            this.UpdateSelectedItemsList(e.ChangedItem);
 
-            if (!e.ChangedItem.IsSelected)
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Updates the selected items list by adding or removing the <see cref="SelectableItem{T}"/>.
+        /// </summary>
+        /// <param name="item">A <see cref="SelectableItem{T}"/> that will be added or removed from the selected
+        /// items list.</param>
+        private void UpdateSelectedItemsList(SelectableItem<T> item)
+        {
+            var idx = this.IndexOf(item);
+
+            if (!item.IsSelected)
             {
                 _selectedItemsIndexes.Remove(idx);
-                _selectedItems.Remove(e.ChangedItem.Item);
+                _selectedItems.Remove(item.Item);
             }
             else
             {
                 if (_selectedItemsIndexes.Count == 0 || _selectedItemsIndexes[_selectedItemsIndexes.Count - 1] < idx)
                 {
                     _selectedItemsIndexes.Add(idx);
-                    _selectedItems.Add(e.ChangedItem.Item);
+                    _selectedItems.Add(item.Item);
                 }
                 else if (_selectedItemsIndexes[0] > idx)
                 {
                     _selectedItemsIndexes.Insert(0, idx);
-                    _selectedItems.Insert(0, e.ChangedItem.Item);
+                    _selectedItems.Insert(0, item.Item);
                 }
                 else
                 {
                     int indexOfNextGreatest = _selectedItemsIndexes.IndexOf(_selectedItemsIndexes.Where(i => i > idx).First());
 
                     _selectedItemsIndexes.Insert(indexOfNextGreatest, idx);
-                    _selectedItems.Insert(indexOfNextGreatest, e.ChangedItem.Item);
+                    _selectedItems.Insert(indexOfNextGreatest, item.Item);
                 }
-            }
-
-            if (handler != null)
-            {
-                handler(this, e);
             }
         }
 
