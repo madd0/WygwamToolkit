@@ -18,7 +18,6 @@
 namespace Wygwam.Windows.Controls
 {
     using global::Windows.ApplicationModel.Activation;
-    using global::Windows.Foundation;
     using global::Windows.UI.Core;
     using global::Windows.UI.Xaml;
     using global::Windows.UI.Xaml.Controls;
@@ -26,10 +25,11 @@ namespace Wygwam.Windows.Controls
     using global::Windows.UI.Xaml.Media.Imaging;
     using System;
     using System.Linq;
-    using System.Threading;
+    using System.Reflection;
     using System.Threading.Tasks;
     using System.Windows.Input;
     using System.Xml.Linq;
+    using Wygwam.Windows.ViewModels;
 
     /// <summary>
     /// Provides a basic extended splash screen that follows Microsoft guidelines.
@@ -65,6 +65,8 @@ namespace Wygwam.Windows.Controls
         /// </summary>
         public static readonly DependencyProperty NavigationParameterProperty =
             DependencyProperty.Register("NavigationParameter", typeof(object), typeof(ExtendedSplashScreen), new PropertyMetadata(null));
+
+        private static readonly TypeInfo _baseViewModelTypeInfo = typeof(BaseViewModel).GetTypeInfo();
 
         private SplashScreen _splashScreen;
 
@@ -305,11 +307,18 @@ namespace Wygwam.Windows.Controls
             await this.PerformLoadingActionAsync().ContinueWith(
                 _ =>
                 {
-                    var rootFrame = new Frame();
+                    if (_baseViewModelTypeInfo.IsAssignableFrom(_nextPage.GetTypeInfo()))
+                    {
+                        NavigationController.GoToInstance((BaseViewModel)this.NavigationParameter);
+                    }
+                    else
+                    {
+                        var rootFrame = new Frame();
 
-                    rootFrame.Navigate(_nextPage, this.NavigationParameter);
+                        rootFrame.Navigate(_nextPage, this.NavigationParameter);
 
-                    Window.Current.Content = rootFrame;
+                        Window.Current.Content = rootFrame;
+                    }
                 },
                 _uiScheduler);
         }
@@ -331,16 +340,16 @@ namespace Wygwam.Windows.Controls
             TaskFactory uiFactory = new TaskFactory(_uiScheduler);
 
             Task<Task> evenHandlerTask = uiFactory.StartNew(() =>
+            {
+                if (this.LoadingOperation != null)
                 {
-                    if (this.LoadingOperation != null)
-                    {
-                        return this.LoadingOperation(_mustLoadPreviousRunningState);
-                    }
-                    else
-                    {
-                        return Task.FromResult(false);
-                    }
-                });
+                    return this.LoadingOperation(_mustLoadPreviousRunningState);
+                }
+                else
+                {
+                    return Task.FromResult(false);
+                }
+            });
 
             Task<Task> commandTask = uiFactory.StartNew(() => this.ExecuteCommand());
 

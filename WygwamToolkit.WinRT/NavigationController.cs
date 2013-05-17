@@ -71,7 +71,7 @@ namespace Wygwam.Windows
                 return CurrentFrame != null ? CurrentFrame.Content as Page : null;
             }
         }
-        
+
         /// <summary>
         /// Goes back in the navigation stack.
         /// </summary>
@@ -163,9 +163,16 @@ namespace Wygwam.Windows
         /// </summary>
         /// <typeparam name="TViewModel">The type of the desired view model.</typeparam>
         /// <param name="args">An optional list of arguments that will be used to initialize the view model.</param>
-        /// <remarks>The requested view model type must be registered with the
-        /// <see cref="M:Register{TViewModel, TView}"/> method before navigating.</remarks>
-        public static void GoTo<TViewModel>(params object[] args)
+        /// <returns>
+        /// The instance of the view model that was used for navigation.
+        /// </returns>
+        /// <seealso cref="M:Register{TViewModel, TView}" />
+        /// <exception cref="System.ArgumentException">The specified view model type has no registered view.</exception>
+        /// <remarks>
+        /// The requested view model type must be registered with the
+        /// <see cref="M:Register{TViewModel, TView}" /> method before navigating.
+        /// </remarks>
+        public static TViewModel GoTo<TViewModel>(params object[] args)
             where TViewModel : BaseViewModel
         {
             var type = typeof(TViewModel);
@@ -177,9 +184,79 @@ namespace Wygwam.Windows
 
             var instance = _viewModelGenerators[type](args);
 
+            return GoToInstance<TViewModel>((TViewModel)instance);
+        }
+
+        /// <summary>
+        /// Navigates the application to the view corresponding to the specified view model.
+        /// </summary>
+        /// <typeparam name="TViewModel">The type of the desired view model.</typeparam>
+        /// <param name="instance">The instance of the view model that will be passed on to the view.</param>
+        /// <returns>
+        /// The instance of the view model that was used for navigation.
+        /// </returns>
+        /// <seealso cref="M:Register{TViewModel, TView}" />
+        /// <exception cref="System.ArgumentException">The specified view model type has no registered view.</exception>
+        /// <exception cref="System.Exception">Failed to navigate to requested page.</exception>
+        /// <remarks>
+        /// The requested view model type must be registered with the
+        /// <see cref="M:Register{TViewModel, TView}" /> method before navigating.
+        /// </remarks>
+        public static TViewModel GoToInstance<TViewModel>(TViewModel instance)
+            where TViewModel : BaseViewModel
+        {
+            var type = instance.GetType();
+
+            if (!_viewModelMap.ContainsKey(type))
+            {
+                throw new ArgumentException("The specified view model type has no registered view.");
+            }
+
             _viewModels.Push(instance);
 
-            CurrentFrame.Navigate(_viewModelMap[type], instance);
+            Frame rootFrame = CurrentFrame;
+
+            // Do not repeat app initialization when the Window already has content,
+            // just ensure that the window is active
+            if (rootFrame == null)
+            {
+                // Create a Frame to act as the navigation context and navigate to the first page
+                rootFrame = new Frame();
+
+                // Place the frame in the current Window
+                CurrentFrame = rootFrame;
+            }
+
+            if (!CurrentFrame.Navigate(_viewModelMap[type], instance))
+            {
+                throw new Exception("Failed to navigate to requested page.");
+            }
+
+            return instance;
+        }
+
+        /// <summary>
+        /// Navigates the application to the view corresponding to the specified view model and activates
+        /// the application.
+        /// </summary>
+        /// <typeparam name="TViewModel">The type of the desired view model.</typeparam>
+        /// <param name="args">An optional list of arguments that will be used to initialize the view model.</param>
+        /// <returns>
+        /// The instance of the view model that was used for navigation.
+        /// </returns>
+        /// <seealso cref="M:Register{TViewModel, TView}" />
+        /// <seealso cref="M:GoTo{TViewModel}"/>
+        /// <remarks>
+        /// The requested view model type must be registered with the <see cref="M:Register{TViewModel, TView}" /> method before navigating.
+        /// </remarks>
+        public static TViewModel Activate<TViewModel>(params object[] args)
+            where TViewModel : BaseViewModel
+        {
+            var result = GoTo<TViewModel>(args);
+
+            Window.Current.Activate();
+
+            return result;
         }
     }
 }
