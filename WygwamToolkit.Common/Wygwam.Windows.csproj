@@ -41,6 +41,8 @@
     <Compile Include="Extensions\IListExtensions.cs" />
     <Compile Include="Input\AsyncDelegateCommand.cs" />
     <Compile Include="Input\AsyncDelegateCommand{T}.cs" />
+    <Compile Include="Input\DelegateCommand{T}.cs" />
+    <Compile Include="Input\DelegateCommand.cs" />
     <Compile Include="Input\IAsyncExecutable.cs" />
     <Compile Include="Managers\ILocationManager.cs" />
     <Compile Include="Networking\InternetConnectionType.cs" />
