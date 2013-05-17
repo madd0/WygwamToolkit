@@ -54,9 +54,7 @@ namespace Wygwam.Windows.ViewModels
         {
             foreach (var item in collection)
             {
-                item.PropertyChanged += this.OnItemPropertyChanged;
-
-                this.UpdateSelectedItemsList(item);
+                this.BindToSelectableItem(item);
             }
         }
 
@@ -89,7 +87,7 @@ namespace Wygwam.Windows.ViewModels
             {
                 foreach (var item in e.NewItems.Cast<SelectableItem<T>>())
                 {
-                    item.PropertyChanged += this.OnItemPropertyChanged;
+                    this.BindToSelectableItem(item);
                 }
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove ||
@@ -117,6 +115,13 @@ namespace Wygwam.Windows.ViewModels
             {
                 handler(this, e);
             }
+        }
+
+        private void BindToSelectableItem(SelectableItem<T> item)
+        {
+            item.PropertyChanged += this.OnItemPropertyChanged;
+
+            this.UpdateSelectedItemsList(item);
         }
 
         /// <summary>

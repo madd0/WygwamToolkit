@@ -33,5 +33,15 @@ namespace Wygwam.Windows.ViewModels
         {
             return Task.FromResult(false);
         }
+
+        /// <summary>
+        /// Reloads this instance.
+        /// </summary>
+        /// <returns>An instance of <see cref="System.Threading.Tasks.Task"/> that helps in
+        /// asynchronous programming.</returns>
+        public virtual Task Reload()
+        {
+            return Task.FromResult(false);
+        }
     }
 }

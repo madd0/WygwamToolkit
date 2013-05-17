@@ -60,6 +60,12 @@ namespace Wygwam.Windows.Controls
         public static readonly DependencyProperty CommandParameterProperty =
             DependencyProperty.Register("CommandParameter", typeof(object), typeof(ExtendedSplashScreen), new PropertyMetadata(null));
 
+        /// <summary>
+        /// Identifies the <see cref="P:NavigationParameter"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty NavigationParameterProperty =
+            DependencyProperty.Register("NavigationParameter", typeof(object), typeof(ExtendedSplashScreen), new PropertyMetadata(null));
+
         private SplashScreen _splashScreen;
 
         private Image _splashScreenImage;
@@ -70,7 +76,6 @@ namespace Wygwam.Windows.Controls
         private Brush _backgroundBrush;
 
         private Type _nextPage;
-        private object _navParameter;
 
         private TaskScheduler _uiScheduler;
 
@@ -103,7 +108,8 @@ namespace Wygwam.Windows.Controls
             : this()
         {
             _nextPage = nextPage;
-            _navParameter = parameter;
+
+            this.NavigationParameter = parameter;
 
             this.LaunchArgs = args;
         }
@@ -187,6 +193,15 @@ namespace Wygwam.Windows.Controls
         {
             get { return (bool)GetValue(IsLoadingProperty); }
             set { SetValue(IsLoadingProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that will used as a parameter when the extended splash screen navigates to the next page.
+        /// </summary>
+        public object NavigationParameter
+        {
+            get { return (object)GetValue(NavigationParameterProperty); }
+            set { SetValue(NavigationParameterProperty, value); }
         }
 
         /// <summary>
@@ -292,7 +307,7 @@ namespace Wygwam.Windows.Controls
                 {
                     var rootFrame = new Frame();
 
-                    rootFrame.Navigate(_nextPage, _navParameter);
+                    rootFrame.Navigate(_nextPage, this.NavigationParameter);
 
                     Window.Current.Content = rootFrame;
                 },

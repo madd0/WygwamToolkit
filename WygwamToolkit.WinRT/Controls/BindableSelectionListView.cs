@@ -28,7 +28,7 @@ namespace Wygwam.Windows.Controls
     /// in its <see cref="P:ItemsControl.ItemsSource"/> collection.
     /// </summary>
     /// <remarks>Due to the dynamic nature of binding, any type of object with an <c>IsSelected</c>
-    /// property will work, but the toolkit provides <see cref="T:Wygwam.Windows.ViewModels.SelectableItem<T>"/>
+    /// property will work, but the toolkit provides <see cref="T:Wygwam.Windows.ViewModels.SelectableItem{T}"/>
     /// for this purpose.</remarks>
     public class BindableSelectionListView : ListView
     {
