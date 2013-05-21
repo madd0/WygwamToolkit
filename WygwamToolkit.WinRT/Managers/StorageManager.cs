@@ -19,7 +19,9 @@ namespace Wygwam.Windows.WinRT
 {
     using global::Windows.Storage;
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
     using Wygwam.Windows.Storage;
 
@@ -195,7 +197,7 @@ namespace Wygwam.Windows.WinRT
         {
             try
             {
-                var file = await GetDataFolder(storageType).GetFileAsync(path);
+                var file = await GetDataFolder(storageType).GetItemAsync(path);
 
                 await file.DeleteAsync();
 
@@ -206,6 +208,37 @@ namespace Wygwam.Windows.WinRT
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Called when <see cref="M:GetDataFoldersAsync" /> is executed to retrieve a list of subfolders from persistent storage.
+        /// </summary>
+        /// <param name="path">The path of the parent folder.</param>
+        /// <param name="storageType">Defines the desired storage type. Not all implementations support all storage types.</param>
+        /// <returns>
+        /// A list of the names of the subfolders contained in the requested folder.
+        /// </returns>
+        protected override async Task<IEnumerable<string>> OnGetDataFoldersAsync(string path, Storage.StorageType storageType)
+        {
+            var folder = await GetDataFolder(storageType).GetFolderAsync(path);
+
+            return (await folder.GetFoldersAsync()).Select(f => f.Name);
+        }
+
+        /// <summary>
+        /// Called when <see cref="M:GetDataFilesAsync" /> is executed to retrieve a list of file names from persistent storage.
+        /// </summary>
+        /// <param name="path">The path of the parent folder.</param>
+        /// <param name="storageType">Defines the desired storage type. Not all implementations support all storage types.</param>
+        /// <returns>
+        /// A list of the names of the files contained in the requested folder.
+        /// </returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected override async Task<IEnumerable<string>> OnGetDataFilesAsync(string path, StorageType storageType)
+        {
+            var folder = await GetDataFolder(storageType).GetFolderAsync(path);
+
+            return (await folder.GetFilesAsync()).Select(f => f.Name);
         }
 
         /// <summary>

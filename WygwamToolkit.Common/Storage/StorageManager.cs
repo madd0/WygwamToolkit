@@ -17,6 +17,7 @@
 
 namespace Wygwam.Windows.Storage
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Wygwam.Windows;
 
@@ -171,9 +172,40 @@ namespace Wygwam.Windows.Storage
         /// <returns>
         ///   <c>true</c> if the object was successfully deleted.
         /// </returns>
-        public Task<bool> DeleteDataAsync(string path, StorageType storageType = StorageType.Local)
+        public async Task<bool> DeleteDataAsync(string path, StorageType storageType = StorageType.Local)
         {
-            return this.DeleteDataAsync(path, storageType);
+            using (var @lock = await _lock.LockAsync())
+            {
+                return await this.OnDeleteDataAsync(path, storageType);
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of folder names contained in the desired path.
+        /// </summary>
+        /// <param name="path">The path of the parent folder.</param>
+        /// <param name="storageType">Defines the desired storage type. Not all implementations support all storage types.</param>
+        /// <returns>A list of the names of the subfolders contained in the requested folder.</returns>
+        public async Task<IEnumerable<string>> GetDataFoldersAsync(string path, StorageType storageType = StorageType.Local)
+        {
+            using (var @lock = await _lock.LockAsync())
+            {
+                return await this.OnGetDataFoldersAsync(path, storageType);
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of file names contained in the desired path.
+        /// </summary>
+        /// <param name="path">The path of the parent folder.</param>
+        /// <param name="storageType">Defines the desired storage type. Not all implementations support all storage types.</param>
+        /// <returns>A list of the names of the subfolders contained in the requested folder.</returns>
+        public async Task<IEnumerable<string>> GetDataFilesAsync(string path, StorageType storageType = StorageType.Local)
+        {
+            using (var @lock = await _lock.LockAsync())
+            {
+                return await this.OnGetDataFilesAsync(path, storageType);
+            }
         }
 
         /// <summary>
@@ -239,5 +271,21 @@ namespace Wygwam.Windows.Storage
         ///   <c>true</c> if the object was successfully deleted.
         /// </returns>
         protected abstract Task<bool> OnDeleteDataAsync(string path, StorageType storageType);
+
+        /// <summary>
+        /// Called when <see cref="M:GetDataFoldersAsync"/> is executed to retrieve a list of subfolders from persistent storage.
+        /// </summary>
+        /// <param name="path">The path of the parent folder.</param>
+        /// <param name="storageType">Defines the desired storage type. Not all implementations support all storage types.</param>
+        /// <returns>A list of the names of the subfolders contained in the requested folder.</returns>
+        protected abstract Task<IEnumerable<string>> OnGetDataFoldersAsync(string path, StorageType storageType);
+
+        /// <summary>
+        /// Called when <see cref="M:GetDataFilesAsync"/> is executed to retrieve a list of file names from persistent storage.
+        /// </summary>
+        /// <param name="path">The path of the parent folder.</param>
+        /// <param name="storageType">Defines the desired storage type. Not all implementations support all storage types.</param>
+        /// <returns>A list of the names of the files contained in the requested folder.</returns>
+        protected abstract Task<IEnumerable<string>> OnGetDataFilesAsync(string path, StorageType storageType);
     }
 }
