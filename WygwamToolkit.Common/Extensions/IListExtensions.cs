@@ -17,6 +17,8 @@
 
 namespace Wygwam.Windows
 {
+    using System;
+    using System.Linq;
     using System.Collections.Generic;
 
     /// <summary>
@@ -35,6 +37,32 @@ namespace Wygwam.Windows
             foreach (var item in range)
             {
                 list.Add(item);
+            }
+        }
+
+        /// <summary>
+        /// Inserts an item in a list in ascending order.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements in the list. The type must implement <see cref="System.IComparable{T}"/>.</typeparam>
+        /// <param name="list">The list in which the item will be inserted.</param>
+        /// <param name="item">The item to insert.</param>
+        /// <remarks>As is, this method is O(N).</remarks>
+        public static void InsertSorted<T>(this IList<T> list, T item)
+            where T : IComparable<T>
+        {
+            if (!list.Any() || list.Last().CompareTo(item) < 0)
+            {
+                list.Add(item);
+                return;
+            }
+
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (list[i].CompareTo(item) >= 0)
+                {
+                    list.Insert(i, item);
+                    break;
+                }
             }
         }
     }
