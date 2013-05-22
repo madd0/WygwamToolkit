@@ -20,6 +20,7 @@ namespace Wygwam.Windows.Controls
     using global::Windows.UI.Xaml.Controls;
     using global::Windows.UI.Xaml.Controls.Primitives;
     using global::Windows.UI.Xaml.Data;
+    using System.Windows.Input;
 
     /// <summary>
     /// An extension of the WinRT <see cref="global::Windows.UI.Xaml.Controls.GridView"/>
@@ -30,7 +31,7 @@ namespace Wygwam.Windows.Controls
     /// <remarks>Due to the dynamic nature of binding, any type of object with an <c>IsSelected</c>
     /// property will work, but the toolkit provides <see cref="T:Wygwam.Windows.ViewModels.SelectableItem{T}"/>
     /// for this purpose.</remarks>
-    public class BindableSelectionGridView : GridView
+    public class BindableSelectionGridView : ExtendedGridView
     {
         /// <summary>
         /// Prepares the specified element to display the specified item.

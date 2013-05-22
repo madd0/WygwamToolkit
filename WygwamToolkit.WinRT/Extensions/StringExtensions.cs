@@ -17,14 +17,10 @@
 
 namespace Wygwam.Windows
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using global::Windows.UI;
-    using System.Text.RegularExpressions;
+    using System;
     using System.Globalization;
+    using System.Text.RegularExpressions;
 
     /// <summary>
     /// Provides extensions methods for <see cref="System.String"/>.
@@ -34,10 +30,10 @@ namespace Wygwam.Windows
         private static readonly Regex regex = new Regex("#(?<alpha>[0-9a-f]{2})?(?<red>[0-9a-f]{2})(?<green>[0-9a-f]{2})(?<blue>[0-9a-f]{2})", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         /// <summary>
-        /// Converts an aRGB hex string to a <see cref="Windows.UI.Color"/>.
+        /// Converts an aRGB hex string to a <see cref="global::Windows.UI.Color"/>.
         /// </summary>
         /// <param name="str">The aRGB hex string.</param>
-        /// <returns>The <see cref="Windows.UI.Color"/> corresponding to the provided aRGB string.</returns>
+        /// <returns>The <see cref="global::Windows.UI.Color"/> corresponding to the provided aRGB string.</returns>
         public static Color AsColor(this string str)
         {
             var matches = regex.Match(str);

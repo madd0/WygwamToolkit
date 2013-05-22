@@ -30,7 +30,7 @@ namespace Wygwam.Windows.Controls
     /// <remarks>Due to the dynamic nature of binding, any type of object with an <c>IsSelected</c>
     /// property will work, but the toolkit provides <see cref="T:Wygwam.Windows.ViewModels.SelectableItem{T}"/>
     /// for this purpose.</remarks>
-    public class BindableSelectionListView : ListView
+    public class BindableSelectionListView : ExtendedListView
     {
         /// <summary>
         /// Prepares the specified element to display the specified item.
