@@ -24,6 +24,8 @@ namespace Wygwam.Windows.ViewModels
     /// </summary>
     public class BaseViewModel : BindableBase
     {
+        private static readonly Task<bool> _defaultTask = Task.FromResult(false);
+
         /// <summary>
         /// Called when the underlying view has finished loading.
         /// </summary>
@@ -31,7 +33,27 @@ namespace Wygwam.Windows.ViewModels
         /// asynchronous programming.</returns>
         public virtual Task OnLoaded()
         {
-            return Task.FromResult(false);
+            return _defaultTask;
+        }
+
+        /// <summary>
+        /// Called when the application is being suspended.
+        /// </summary>
+        /// <returns>An instance of <see cref="System.Threading.Tasks.Task"/> that helps in
+        /// asynchronous programming.</returns>
+        public virtual Task OnSuspending()
+        {
+            return _defaultTask;
+        }
+
+        /// <summary>
+        /// Called when the application is being resumed.
+        /// </summary>
+        /// <returns>An instance of <see cref="System.Threading.Tasks.Task"/> that helps in
+        /// asynchronous programming.</returns>
+        public virtual Task OnResuming()
+        {
+            return _defaultTask;
         }
 
         /// <summary>
@@ -41,7 +63,28 @@ namespace Wygwam.Windows.ViewModels
         /// asynchronous programming.</returns>
         public virtual Task Reload()
         {
-            return Task.FromResult(false);
+            return _defaultTask;
+        }
+
+        /// <summary>
+        /// Called when the underlying view is about to leave the screen.
+        /// </summary>
+        /// <returns>An instance of <see cref="T:System.Threading.Tasks.Task{bool}"/> that, when completed,
+        /// provides a result of <c>true</c> if the action must be cancelled, otherwise, a result of
+        /// <c>false</c> will allow the view to close.</returns>
+        public virtual Task<bool> OnLeaving()
+        {
+            return _defaultTask;
+        }
+
+        /// <summary>
+        /// Called when the underlying view has left the screen.
+        /// </summary>
+        /// <returns>An instance of <see cref="System.Threading.Tasks.Task"/> that helps in
+        /// asynchronous programming.</returns>
+        public virtual Task OnLeft()
+        {
+            return _defaultTask;
         }
     }
 }
