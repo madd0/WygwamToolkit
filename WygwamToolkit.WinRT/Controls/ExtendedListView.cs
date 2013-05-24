@@ -34,7 +34,7 @@ namespace Wygwam.Windows.Controls
         /// Identifies the <see cref="P:Command"/> dependency property.
         /// </summary>
         public static readonly DependencyProperty CommandProperty =
-            DependencyProperty.Register("Command", typeof(ICommand), typeof(BindableSelectionListView), new PropertyMetadata(null));
+            DependencyProperty.Register("Command", typeof(ICommand), typeof(ExtendedListView), new PropertyMetadata(null));
 
         /// <summary>
         /// Gets or sets the command that will execute when an item of the list is clicked.
