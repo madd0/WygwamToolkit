@@ -18,6 +18,7 @@
 namespace Wygwam.Windows.Controls
 {
     using global::Windows.ApplicationModel.Activation;
+    using global::Windows.Foundation;
     using global::Windows.UI.Core;
     using global::Windows.UI.Xaml;
     using global::Windows.UI.Xaml.Controls;
@@ -65,6 +66,18 @@ namespace Wygwam.Windows.Controls
         /// </summary>
         public static readonly DependencyProperty NavigationParameterProperty =
             DependencyProperty.Register("NavigationParameter", typeof(object), typeof(ExtendedSplashScreen), new PropertyMetadata(null));
+
+        /// <summary>
+        /// Identifies the <see cref="P:AdvancesAutomatically"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty AdvancesAutomaticallyProperty =
+            DependencyProperty.Register("AdvancesAutomatically", typeof(bool), typeof(ExtendedSplashScreen), new PropertyMetadata(true));
+
+        /// <summary>
+        /// Identifies the <see cref="P:IsDone"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsDoneProperty =
+            DependencyProperty.Register("IsDone", typeof(bool), typeof(ExtendedSplashScreen), new PropertyMetadata(false, OnIsDoneChanged));
 
         private static readonly TypeInfo _baseViewModelTypeInfo = typeof(BaseViewModel).GetTypeInfo();
 
@@ -156,6 +169,34 @@ namespace Wygwam.Windows.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the splash screen advances automatically to the next
+        /// page once the <see cref="P:Command"/> or <see cref="P:LoadingOperation"/> have completed.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the splash screen is automatically dismissed after the loading operations have
+        /// completed; otherwise, <c>false</c>. The defaul value is <c>true</c>.
+        /// </value>
+        /// <remarks>Although, by default, the extended splash screen will advance to the next page that 
+        /// was specified in its constructor, if you require finer control, you can set this property to <c>false</c>
+        /// and control when navigation occurs using the <see cref="P:IsDone"/> property.</remarks>
+        public bool AdvancesAutomatically
+        {
+            get { return (bool)GetValue(AdvancesAutomaticallyProperty); }
+            set { SetValue(AdvancesAutomaticallyProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether loading is done.
+        /// </summary>
+        /// <remarks>If <see cref="P:AdvancesAutomatically"/> has been set to <c>false</c>, setting
+        /// this property to <c>true</c> will trigger navigation to the next page.</remarks>
+        public bool IsDone
+        {
+            get { return (bool)GetValue(IsDoneProperty); }
+            set { SetValue(IsDoneProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the command that will execute the loading operations when the system splash screen
         /// is dismissed.
         /// </summary>
@@ -234,6 +275,36 @@ namespace Wygwam.Windows.Controls
         }
 
         /// <summary>
+        /// Called when the screen changes size and the splash screen images is repositioned.
+        /// </summary>
+        /// <param name="splashScreenPosition">The splash screen position.</param>
+        protected virtual void OnResize(Rect splashScreenPosition)
+        {
+        }
+
+        /// <summary>
+        /// Called when the <see cref="P:IsDone"/> dependency property changes.
+        /// </summary>
+        /// <param name="d">The object that triggered the event.</param>
+        /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
+        private static void OnIsDoneChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((ExtendedSplashScreen)d).OnIsDoneChanged((bool)e.NewValue);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="P:IsDone"/> dependency property changes.
+        /// </summary>
+        /// <param name="isDone">if set to <c>true</c>, loading has completed and the application should advance to the next page.</param>
+        private void OnIsDoneChanged(bool isDone)
+        {
+            if (isDone)
+            {
+                this.MoveToNextPage();
+            }
+        }
+
+        /// <summary>
         /// Loads the path to the splash screen and the background color from the application manifest.
         /// </summary>
         private void LoadManifestData()
@@ -270,6 +341,8 @@ namespace Wygwam.Windows.Controls
                 _splashScreenImage.SetValue(Canvas.TopProperty, imgPos.Y);
                 _splashScreenImage.Height = imgPos.Height;
                 _splashScreenImage.Width = imgPos.Width;
+
+                this.OnResize(imgPos);
             }
         }
 
@@ -307,20 +380,31 @@ namespace Wygwam.Windows.Controls
             await this.PerformLoadingActionAsync().ContinueWith(
                 _ =>
                 {
-                    if (_baseViewModelTypeInfo.IsAssignableFrom(_nextPage.GetTypeInfo()))
+                    if (this.AdvancesAutomatically)
                     {
-                        NavigationController.GoToInstance((BaseViewModel)this.NavigationParameter);
-                    }
-                    else
-                    {
-                        var rootFrame = new Frame();
-
-                        rootFrame.Navigate(_nextPage, this.NavigationParameter);
-
-                        Window.Current.Content = rootFrame;
+                        this.IsDone = true;
                     }
                 },
                 _uiScheduler);
+        }
+
+        /// <summary>
+        /// Moves to next page.
+        /// </summary>
+        private void MoveToNextPage()
+        {
+            if (_baseViewModelTypeInfo.IsAssignableFrom(_nextPage.GetTypeInfo()))
+            {
+                NavigationController.GoToInstance((BaseViewModel)this.NavigationParameter);
+            }
+            else
+            {
+                var rootFrame = new Frame();
+
+                rootFrame.Navigate(_nextPage, this.NavigationParameter);
+
+                Window.Current.Content = rootFrame;
+            }
         }
 
         /// <summary>
