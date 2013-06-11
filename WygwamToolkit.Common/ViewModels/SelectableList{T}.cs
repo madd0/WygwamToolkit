@@ -33,6 +33,7 @@ namespace Wygwam.Windows.ViewModels
     {
         private List<int> _selectedItemsIndexes;
         private ObservableCollection<T> _selectedItems;
+        private bool _maintainsSelectedItemsOrder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SelectableList{T}" /> class.
@@ -71,6 +72,24 @@ namespace Wygwam.Windows.ViewModels
             get
             {
                 return _selectedItems;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines whether the list of selected items maintains the order
+        /// of the items in the original list.
+        /// </summary>
+        public bool MaintainsSelectedItemsOrder
+        {
+            get { return _maintainsSelectedItemsOrder; }
+
+            set
+            {
+                if (_maintainsSelectedItemsOrder != value)
+                {
+                    _maintainsSelectedItemsOrder = value;
+                    this.OnPropertyChanged(new PropertyChangedEventArgs("MaintainsSelectedItemsOrder"));
+                }
             }
         }
 
@@ -135,27 +154,38 @@ namespace Wygwam.Windows.ViewModels
 
             if (!item.IsSelected)
             {
-                _selectedItemsIndexes.Remove(idx);
+                if (this.MaintainsSelectedItemsOrder)
+                {
+                    _selectedItemsIndexes.Remove(idx);
+                }
+
                 _selectedItems.Remove(item.Item);
             }
             else
             {
-                if (_selectedItemsIndexes.Count == 0 || _selectedItemsIndexes[_selectedItemsIndexes.Count - 1] < idx)
+                if (this.MaintainsSelectedItemsOrder)
                 {
-                    _selectedItemsIndexes.Add(idx);
-                    _selectedItems.Add(item.Item);
-                }
-                else if (_selectedItemsIndexes[0] > idx)
-                {
-                    _selectedItemsIndexes.Insert(0, idx);
-                    _selectedItems.Insert(0, item.Item);
+                    if (_selectedItemsIndexes.Count == 0 || _selectedItemsIndexes[_selectedItemsIndexes.Count - 1] < idx)
+                    {
+                        _selectedItemsIndexes.Add(idx);
+                        _selectedItems.Add(item.Item);
+                    }
+                    else if (_selectedItemsIndexes[0] > idx)
+                    {
+                        _selectedItemsIndexes.Insert(0, idx);
+                        _selectedItems.Insert(0, item.Item);
+                    }
+                    else
+                    {
+                        int indexOfNextGreatest = _selectedItemsIndexes.IndexOf(_selectedItemsIndexes.Where(i => i > idx).First());
+
+                        _selectedItemsIndexes.Insert(indexOfNextGreatest, idx);
+                        _selectedItems.Insert(indexOfNextGreatest, item.Item);
+                    }
                 }
                 else
                 {
-                    int indexOfNextGreatest = _selectedItemsIndexes.IndexOf(_selectedItemsIndexes.Where(i => i > idx).First());
-
-                    _selectedItemsIndexes.Insert(indexOfNextGreatest, idx);
-                    _selectedItems.Insert(indexOfNextGreatest, item.Item);
+                    _selectedItems.Add(item.Item);
                 }
             }
         }
