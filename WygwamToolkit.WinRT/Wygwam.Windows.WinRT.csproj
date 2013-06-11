@@ -110,6 +110,7 @@
     <Compile Include="Controls\BasePage.cs" />
     <Compile Include="Controls\BindableSelectionListView.cs" />
     <Compile Include="Controls\BindableSelectionGridView.cs" />
+    <Compile Include="Extensions\VisualState.cs" />
     <Compile Include="Controls\ExtendedGridView.cs" />
     <Compile Include="Controls\ExtendedListView.cs" />
     <Compile Include="Controls\ExtendedSplashScreen.cs" />
