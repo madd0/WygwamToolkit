@@ -53,6 +53,9 @@ namespace Wygwam.Windows.ViewModels
         public SelectableList(IEnumerable<SelectableItem<T>> collection)
             : base(collection)
         {
+            _selectedItems = new ObservableCollection<T>();
+            _selectedItemsIndexes = new List<int>();
+
             foreach (var item in collection)
             {
                 this.BindToSelectableItem(item);
