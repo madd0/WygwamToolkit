@@ -20,6 +20,7 @@ namespace Wygwam.Windows
     using global::Windows.UI.Core;
     using global::Windows.UI.Xaml;
     using System;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// TODO: Provide summary section in the documentation header.
@@ -53,7 +54,7 @@ namespace Wygwam.Windows
             return _dispatcher.HasThreadAccess;
         }
 
-        public static void BeginInvoke(Action action)
+        public static async Task BeginInvoke(Action action)
         {
             RequireInstance();
 
@@ -65,7 +66,7 @@ namespace Wygwam.Windows
             }
             else
             {
-                _dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action());
+                await _dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action());
             }
         }
 
