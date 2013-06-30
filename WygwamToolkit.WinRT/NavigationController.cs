@@ -34,21 +34,7 @@ namespace Wygwam.Windows
 
         private static readonly Stack<BaseViewModel> _viewModels = new Stack<BaseViewModel>();
 
-        /// <summary>
-        /// Provides access to the current <see cref="global::Windows.UI.Xaml.Controls.Frame"/>, if
-        /// one exists.
-        /// </summary>
-        public static Frame CurrentFrame
-        {
-            get
-            {
-                return Window.Current.Content as Frame;
-            }
-            private set
-            {
-                Window.Current.Content = value;
-            }
-        }
+        private static IWindowManager _windowManager = new DefaultWindowManager();
 
         /// <summary>
         /// Gets the current view model.
@@ -68,7 +54,9 @@ namespace Wygwam.Windows
         {
             get
             {
-                return CurrentFrame != null ? CurrentFrame.Content as Page : null;
+                var frame = _windowManager.NavigationFrame;
+
+                return frame != null ? frame.Content as Page : null;
             }
         }
 
@@ -77,13 +65,15 @@ namespace Wygwam.Windows
         /// </summary>
         public static void GoBack()
         {
-            if (CurrentFrame != null && CurrentFrame.CanGoBack)
+            var frame = _windowManager.NavigationFrame;
+
+            if (frame != null && frame.CanGoBack)
             {
                 BaseViewModel viewModel = _viewModels.Pop();
 
-                CurrentFrame.GoBack();
+                frame.GoBack();
 
-                var currentPage = CurrentFrame.Content as Page;
+                var currentPage = frame.Content as Page;
 
                 if (currentPage != null)
                 {
@@ -214,20 +204,9 @@ namespace Wygwam.Windows
 
             _viewModels.Push(instance);
 
-            Frame rootFrame = CurrentFrame;
+            var frame = _windowManager.EnsureNavigationFrameExists();
 
-            // Do not repeat app initialization when the Window already has content,
-            // just ensure that the window is active
-            if (rootFrame == null)
-            {
-                // Create a Frame to act as the navigation context and navigate to the first page
-                rootFrame = new Frame();
-
-                // Place the frame in the current Window
-                CurrentFrame = rootFrame;
-            }
-
-            if (!CurrentFrame.Navigate(_viewModelMap[type], instance))
+            if (!frame.Navigate(_viewModelMap[type], instance))
             {
                 throw new Exception("Failed to navigate to requested page.");
             }
@@ -257,6 +236,26 @@ namespace Wygwam.Windows
             Window.Current.Activate();
 
             return result;
+        }
+
+        /// <summary>
+        /// Sets the instance of <see cref="IWindowManager" /> that will be used to access the
+        /// <see cref="global::Windows.UI.Xaml.Controls.Frame" /> used for navigation.
+        /// </summary>
+        /// <param name="manager">An instance of <see cref="IWindowManager" /> that provides acces to the navigation frame.</param>
+        /// <seealso cref="DefaultWindowManager" />
+        /// <exception cref="System.ArgumentNullException">manager;The window manager cannot be null.</exception>
+        /// <remarks>
+        /// If no window manager is set, the controller uses and instance of <see cref="DefaultWindowManager" />.
+        /// </remarks>
+        public static void SetWindowManager(IWindowManager manager)
+        {
+            if (manager == null)
+            {
+                throw new ArgumentNullException("manager", "The window manager cannot be null.");
+            }
+
+            _windowManager = manager;
         }
     }
 }
