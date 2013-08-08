@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="ExtendedSplashScreen.cs" company="askalll">
+// <copyright file="TileTexturePanel.cs" company="askalll">
 //     Copyright (c) 2013 Askalll.
 //     Licensed under the Microsoft Public License (Ms-PL) (the "License");
 //     you may not use this file except in compliance with the License.
