@@ -59,6 +59,13 @@ namespace Wygwam.Windows.Controls
             base.OnNavigatedTo(e);
 
             this.DataContext = e.Parameter;
+
+            var vm = this.DataContext as BaseViewModel;
+
+            if (vm != null)
+            {
+                vm.OnArrived();
+            }
         }
 
         /// <summary>

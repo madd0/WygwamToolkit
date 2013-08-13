@@ -86,5 +86,15 @@ namespace Wygwam.Windows.ViewModels
         {
             return _defaultTask;
         }
+
+        /// <summary>
+        /// Called when the underlying view has been loaded by the navigation system.
+        /// </summary>
+        /// <returns>An instance of <see cref="System.Threading.Tasks.Task"/> that helps in
+        /// asynchronous programming.</returns>
+        public virtual Task OnArrived()
+        {
+            return _defaultTask;
+        }
     }
 }
