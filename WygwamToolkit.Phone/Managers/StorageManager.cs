@@ -17,6 +17,8 @@
 
 namespace Wygwam.Windows.Phone
 {
+    using global::Windows.Storage;
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.IO.IsolatedStorage;
@@ -25,11 +27,11 @@ namespace Wygwam.Windows.Phone
     using Wygwam.Windows.Storage;
 
     /// <summary>
-    /// Extends <see cref="Wygwam.Windows.Storage.StorageManager"/> to store settings and objects in isolated storage.
+    /// Extends <see cref="Wygwam.Windows.Storage.StorageManager"/> to store settings and objects in local or roaming storage.
     /// </summary>
     public class StorageManager : Wygwam.Windows.Storage.StorageManager
     {
-        private static readonly IsolatedStorageSettings _applicationSettings = IsolatedStorageSettings.ApplicationSettings;
+        private static readonly CreationCollisionOption _defaultCollisionPolicy = CreationCollisionOption.ReplaceExisting;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StorageManager"/> class.
@@ -60,25 +62,25 @@ namespace Wygwam.Windows.Phone
         protected override Task<bool> OnSaveSettingAsync(string key, object data, Storage.StorageType storageType)
         {
             return Task.Run<bool>(() =>
+            {
+                if (null == data)
                 {
-                    if (null == data)
-                    {
-                        return false;
-                    }
+                    return false;
+                }
 
-                    if (_applicationSettings.Contains(key))
-                    {
-                        _applicationSettings[key] = data;
-                    }
-                    else
-                    {
-                        _applicationSettings.Add(key, data);
-                    }
+                var store = GetSettingsContainer(storageType);
 
-                    _applicationSettings.Save();
+                if (store.Contains(key))
+                {
+                    store[key] = data;
+                }
+                else
+                {
+                    store.Add(key, data);
+                }
 
-                    return true;
-                });
+                return true;
+            });
         }
 
         /// <summary>
@@ -91,14 +93,16 @@ namespace Wygwam.Windows.Phone
         protected override Task<T> OnLoadSettingAsync<T>(string key, Storage.StorageType storageType)
         {
             return Task.Run<T>(() =>
-                {
-                    if (!_applicationSettings.Contains(key))
-                    {
-                        return default(T);
-                    }
+            {
+                var store = GetSettingsContainer(storageType);
 
-                    return (T)_applicationSettings[key];
-                });
+                if (!store.Contains(key))
+                {
+                    return default(T);
+                }
+
+                return (T)store[key];
+            });
         }
 
         /// <summary>
@@ -112,21 +116,16 @@ namespace Wygwam.Windows.Phone
         protected override Task<bool> OnRemoveSettingAsync(string key, Storage.StorageType storageType)
         {
             return Task.Run<bool>(() =>
+            {
+                var store = GetSettingsContainer(storageType);
+
+                if (store.Contains(key))
                 {
-                    if (null == key)
-                    {
-                        return false;
-                    }
+                    return store.Remove(key);
+                }
 
-                    if (_applicationSettings.Contains(key))
-                    {
-                        _applicationSettings.Remove(key);
-                    }
-
-                    _applicationSettings.Save();
-                    
-                    return true;
-                });
+                return false;
+            });
         }
 
         /// <summary>
@@ -134,39 +133,24 @@ namespace Wygwam.Windows.Phone
         /// </summary>
         /// <param name="path">The string that identifies where the object will be stored.</param>
         /// <param name="data">The object that will be serialized and stored.</param>
-        /// <param name="serializer">The implementation of <see cref="IDataSerializer" /> that will be used to serialize the specified object.</param>
+        /// <param name="serializer">The implementation of <see cref="Wygwam.Windows.Storage.IDataSerializer" /> that will be used to serialize the specified object.</param>
         /// <param name="storageType">Defines the desired storage type. Not all implementations support all storage types.</param>
         /// <returns>
         ///   <c>true</c> if the object was successfully persisted.
         /// </returns>
-        protected override async Task<bool> OnSaveDataAsync(string path, object data, Storage.IDataSerializer serializer, Storage.StorageType storageType)
+        protected override async Task<bool> OnSaveDataAsync(string path, object data, Wygwam.Windows.Storage.IDataSerializer serializer, Storage.StorageType storageType)
         {
             try
             {
-                using (var isoStore = IsolatedStorageFile.GetUserStoreForApplication())
+                var file = await (await GetDataFolder(storageType, path)).CreateFileAsync(Path.GetFileName(path), _defaultCollisionPolicy);
+
+                using (var fileStream = await file.OpenStreamForWriteAsync())
                 {
-                    if (isoStore.FileExists(path))
-                    {
-                        isoStore.DeleteFile(path);
-                    }
-
-                    using (var saveData = new MemoryStream())
-                    {
-                        serializer.Serialize(saveData, data);
-
-                        if (saveData.Length > 0)
-                        {
-                            using (var fileStream = isoStore.CreateFile(path))
-                            {
-                                saveData.Seek(0, SeekOrigin.Begin);
-                                await saveData.CopyToAsync(fileStream);
-                                await fileStream.FlushAsync();
-                            }
-
-                            return true;
-                        }
-                    }
+                    serializer.Serialize(fileStream, data);
+                    await fileStream.FlushAsync();
                 }
+
+                return true;
             }
             catch
             {
@@ -180,36 +164,27 @@ namespace Wygwam.Windows.Phone
         /// </summary>
         /// <typeparam name="T">The type of the stored value.</typeparam>
         /// <param name="path">The string that identifies where the object is stored.</param>
-        /// <param name="serializer">The implementation of <see cref="IDataSerializer"/> that will be used to deserialize the specified object.</param>
+        /// <param name="serializer">The implementation of <see cref="Wygwam.Windows.Storage.IDataSerializer"/> that will be used to deserialize the specified object.</param>
         /// <param name="storageType">Defines the desired storage type. Not all implementations support all storage types.</param>
         /// <returns>
         ///   <c>true</c> if the object was successfully retrieved.
         /// </returns>
-        protected override Task<T> OnLoadDataAsync<T>(string path, Storage.IDataSerializer serializer, Storage.StorageType storageType)
+        protected override async Task<T> OnLoadDataAsync<T>(string path, Wygwam.Windows.Storage.IDataSerializer serializer, Storage.StorageType storageType)
         {
-            return Task.Run<T>(() =>
+            try
+            {
+                var file = await (await GetDataFolder(storageType, path)).GetFileAsync(Path.GetFileName(path));
+
+                using (var inStream = await file.OpenSequentialReadAsync())
                 {
-                    try
-                    {
-                        using (var isoStore = IsolatedStorageFile.GetUserStoreForApplication())
-                        {
-                            if (isoStore.FileExists(path))
-                            {
-                                using (var inStream = isoStore.OpenFile(path, FileMode.Open).AsInputStream())
-                                {
-                                    return serializer.Deserialize<T>(inStream.AsStreamForRead());
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                    }
-
-                    return default(T);
-                });
+                    return serializer.Deserialize<T>(inStream.AsStreamForRead());
+                }
+            }
+            catch
+            {
+                return default(T);
+            }
         }
-
 
         /// <summary>
         /// Called when <see cref="M:DeleteDataAsync" /> is executed to delete an object from persistent storage.
@@ -219,27 +194,21 @@ namespace Wygwam.Windows.Phone
         /// <returns>
         ///   <c>true</c> if the object was successfully deleted.
         /// </returns>
-        protected override Task<bool> OnDeleteDataAsync(string path, Storage.StorageType storageType)
+        protected override async Task<bool> OnDeleteDataAsync(string path, Storage.StorageType storageType)
         {
-            return Task.Run<bool>(() =>
-                {
-                    try
-                    {
-                        using (var isoStore = IsolatedStorageFile.GetUserStoreForApplication())
-                        {
-                            if (isoStore.FileExists(path))
-                            {
-                                isoStore.DeleteFile(path);
-                                return true;
-                            }
-                        }
-                    }
-                    catch
-                    {
-                    }
+            try
+            {
+                var file = await (await GetDataFolder(storageType, path)).GetItemAsync(Path.GetFileName(path));
 
-                    return false;
-                });
+                await file.DeleteAsync();
+
+                return true;
+            }
+            catch
+            {
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -250,23 +219,11 @@ namespace Wygwam.Windows.Phone
         /// <returns>
         /// A list of the names of the subfolders contained in the requested folder.
         /// </returns>
-        protected override Task<IEnumerable<string>> OnGetDataFoldersAsync(string path, StorageType storageType)
+        protected override async Task<IEnumerable<string>> OnGetDataFoldersAsync(string path, Storage.StorageType storageType)
         {
-            return Task.Run<IEnumerable<string>>(() =>
-            {
-                try
-                {
-                    using (var isoStore = IsolatedStorageFile.GetUserStoreForApplication())
-                    {
-                        return isoStore.GetDirectoryNames();
-                    }
-                }
-                catch
-                {
-                }
+            var folder = await (await GetDataFolder(storageType, path)).GetFolderAsync(Path.GetFileName(path));
 
-                return Enumerable.Empty<string>();
-            });
+            return (await folder.GetFoldersAsync()).Select(f => f.Name);
         }
 
         /// <summary>
@@ -278,23 +235,53 @@ namespace Wygwam.Windows.Phone
         /// A list of the names of the files contained in the requested folder.
         /// </returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected override Task<IEnumerable<string>> OnGetDataFilesAsync(string path, StorageType storageType)
+        protected override async Task<IEnumerable<string>> OnGetDataFilesAsync(string path, StorageType storageType)
         {
-            return Task.Run<IEnumerable<string>>(() =>
-            {
-                try
-                {
-                    using (var isoStore = IsolatedStorageFile.GetUserStoreForApplication())
-                    {
-                        return isoStore.GetFileNames();
-                    }
-                }
-                catch
-                {
-                }
+            var folder = await (await GetDataFolder(storageType, path)).GetFolderAsync(Path.GetFileName(path));
 
-                return Enumerable.Empty<string>();
-            });
+            return (await folder.GetFilesAsync()).Select(f => f.Name);
         }
+
+        /// <summary>
+        /// Gets the appropriate <see cref="global::Windows.Storage.StorageFolder"/> for the requested
+        /// <see cref="Wygwam.Windows.Storage.StorageType"/>.
+        /// </summary>
+        /// <param name="storageType">The requested storage type.</param>
+        /// <returns>The <see cref="global::Windows.Storage.StorageFolder"/> for the requested
+        /// <see cref="Wygwam.Windows.Storage.StorageType"/>.</returns>
+        private static async Task<StorageFolder> GetDataFolder(Storage.StorageType storageType, string path)
+        {
+            var directory = Path.GetDirectoryName(path);
+
+            if (string.IsNullOrEmpty(directory) || directory.Equals("\\") || directory.Equals("/") || directory.Equals("//"))
+                return ApplicationData.Current.LocalFolder;
+
+            StorageFolder folder = await GetDataFolder(storageType, directory);
+
+            var folders = await folder.GetFoldersAsync();
+
+            string folderName = Path.GetFileName(directory);
+            var tmpFolder = (from f in folders
+                      where string.Equals(f.Name, folderName, StringComparison.InvariantCultureIgnoreCase)
+                      select f).FirstOrDefault();
+
+            if (tmpFolder == null)
+               tmpFolder = await folder.CreateFolderAsync(folderName);
+
+            return tmpFolder;
+        }
+
+        /// <summary>
+        /// Gets the appropriate <see cref="global::Windows.Storage.ApplicationDataContainer"/> for the requested
+        /// <see cref="Wygwam.Windows.Storage.StorageType"/>.
+        /// </summary>
+        /// <param name="storageType">The requested storage type.</param>
+        /// <returns>The <see cref="global::Windows.Storage.ApplicationDataContainer"/> for the requested
+        /// <see cref="Wygwam.Windows.Storage.StorageType"/>.</returns>
+        private static IsolatedStorageSettings GetSettingsContainer(Storage.StorageType storageType)
+        {
+            return IsolatedStorageSettings.ApplicationSettings;
+        }
+
     }
 }

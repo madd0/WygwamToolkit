@@ -1,20 +1,23 @@
 ﻿//-----------------------------------------------------------------------
 // <copyright file="Timer.cs" company="Wygwam">
-//   MS-PL
+//     Copyright (c) 2013 Wygwam.
+//     Licensed under the Microsoft Public License (Ms-PL) (the "License");
+//     you may not use this file except in compliance with the License.
+//     You may obtain a copy of the License at
+//
+//         http://opensource.org/licenses/Ms-PL.html
+//
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
 // </copyright>
-// <license>
-//   This source code is subject to terms and conditions of the Microsoft 
-//   Public License. A copy of the license can be found in the LICENSE.md 
-//   file at the root of this distribution. 
-//   By using this source code in any fashion, you are agreeing to be bound 
-//   by the terms of the Microsoft Public License. You must not remove this 
-//   notice, or any other, from this software.
-// </license>
 //-----------------------------------------------------------------------
-
 namespace Wygwam.Windows
 {
     using System;
+
     using System.Windows.Threading;
 
     /// <summary>
@@ -24,14 +27,20 @@ namespace Wygwam.Windows
     public class Timer : ITimer
     {
         private DispatcherTimer _timer;
+        private TimeSpan _interval;
+        private bool _isEnabled;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Timer"/> class.
         /// </summary>
         public Timer()
         {
-            _timer = new DispatcherTimer();
-            _timer.Tick += OnTimerTick;
+            SmartDispatcher.BeginInvoke(() =>
+                {
+                    _timer = new DispatcherTimer();
+                    _timer.Tick += OnTimerTick;
+
+                }).Wait();
         }
 
         /// <summary>
@@ -48,9 +57,18 @@ namespace Wygwam.Windows
         /// </value>
         public TimeSpan Interval
         {
-            get { return _timer.Interval; }
-
-            set { _timer.Interval = value; }
+            get { return _interval; }
+            set
+            {
+                if (_interval != value)
+                {
+                    _interval = value;
+                    SmartDispatcher.BeginInvoke(() =>
+                        {
+                            _timer.Interval = value;
+                        });
+                }
+            }
         }
 
         /// <summary>
@@ -69,7 +87,10 @@ namespace Wygwam.Windows
         /// </summary>
         public void Start()
         {
-            _timer.Start();
+            SmartDispatcher.BeginInvoke(() =>
+            {
+                _timer.Start();
+            });
         }
 
         /// <summary>
@@ -77,7 +98,10 @@ namespace Wygwam.Windows
         /// </summary>
         public void Stop()
         {
-            _timer.Stop();
+            SmartDispatcher.BeginInvoke(() =>
+            {
+                _timer.Stop();
+            });
         }
 
         /// <summary>

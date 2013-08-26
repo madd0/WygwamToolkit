@@ -263,10 +263,6 @@ namespace Wygwam.Windows.Controls
                 _splashScreenImage.ImageOpened += this.OnImageOpened;
                 _splashScreenImage.Source = new BitmapImage(_splashScreenImagePath);
             }
-            else
-            {
-                this.Loaded += this.OnLoaded;
-            }
 
             _panel = this.GetTemplateChild("RootPanel") as Panel;
 
@@ -364,19 +360,6 @@ namespace Wygwam.Windows.Controls
         }
 
         /// <summary>
-        /// Called when the control is loaded. This method is only called if no splash screen image was detected
-        /// in order to bring the control into view.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            this.Loaded -= this.OnLoaded;
-
-            Window.Current.Activate();
-        }
-
-        /// <summary>
         /// Called when the extended splash screen is resized. This is important to ensure that the extended splash 
         /// screen is formatted properly in response to snapping, unsnapping, rotation, etc...
         /// </summary>
@@ -421,13 +404,6 @@ namespace Wygwam.Windows.Controls
                 rootFrame.Navigate(_nextPage, this.NavigationParameter);
 
                 Window.Current.Content = rootFrame;
-            }
-
-            var disposableDataContext = this.DataContext as IDisposable;
-
-            if (disposableDataContext != null)
-            {
-                disposableDataContext.Dispose();
             }
         }
 

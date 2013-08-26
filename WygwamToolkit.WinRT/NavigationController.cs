@@ -124,11 +124,7 @@ namespace Wygwam.Windows
             where TViewModel : BaseViewModel
             where TView : Page
         {
-            Register<TViewModel, TView>(new Func<object[], TViewModel>(
-                args => {
-                    instance.Rehydrate(args);
-                    return instance;
-            }));
+            Register<TViewModel, TView>(_ => instance);
         }
 
         /// <summary>
