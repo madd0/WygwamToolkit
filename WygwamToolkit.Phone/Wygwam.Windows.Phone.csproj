@@ -83,11 +83,26 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\WygwamToolkit.WinRT\BaseNavigationController.cs">
+      <Link>BaseNavigationController.cs</Link>
+    </Compile>
+    <Compile Include="..\WygwamToolkit.WinRT\Controls\BaseExtendedSplashScreen.cs">
+      <Link>Controls\BaseExtendedSplashScreen.cs</Link>
+    </Compile>
+    <Compile Include="..\WygwamToolkit.WinRT\Extensions\VisualState.cs">
+      <Link>Extensions\VisualState.cs</Link>
+    </Compile>
+    <Compile Include="..\WygwamToolkit.WinRT\IWindowManager.cs">
+      <Link>IWindowManager.cs</Link>
+    </Compile>
+    <Compile Include="Controls\ExtendedSplashScreen.cs" />
+    <Compile Include="DefaultWindowManager.cs" />
     <Compile Include="Info\DeviceInfo.cs" />
     <Compile Include="Managers\LocationManager.cs" />
     <Compile Include="Managers\ManifestManager.cs" />
     <Compile Include="Managers\NetworkManager.cs" />
     <Compile Include="Managers\StorageManager.cs" />
+    <Compile Include="NavigationController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\SecurePassword.cs" />
     <Compile Include="SmartDispatcher.cs" />

@@ -107,14 +107,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseNavigationController.cs" />
     <Compile Include="Controls\BasePage.cs" />
     <Compile Include="Controls\BindableSelectionListView.cs" />
     <Compile Include="Controls\BindableSelectionGridView.cs" />
+    <Compile Include="Controls\ExtendedSplashScreen.cs" />
     <Compile Include="DefaultWindowManager.cs" />
     <Compile Include="Extensions\VisualState.cs" />
     <Compile Include="Controls\ExtendedGridView.cs" />
     <Compile Include="Controls\ExtendedListView.cs" />
-    <Compile Include="Controls\ExtendedSplashScreen.cs" />
+    <Compile Include="Controls\BaseExtendedSplashScreen.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="IWindowManager.cs" />

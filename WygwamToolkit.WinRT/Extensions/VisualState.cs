@@ -21,8 +21,13 @@ namespace Wygwam.Windows.Controls
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+#if NETFX_CORE
     using global::Windows.UI.Xaml;
     using global::Windows.UI.Xaml.Controls;
+#elif WINDOWS_PHONE
+    using System.Windows;
+    using System.Windows.Controls;
+#endif
 
     /// <summary>
     /// Provides attached properties that allow the transitioning of a <see cref="global::Windows.UI.Xaml.Controls.Control"/>'s visual state

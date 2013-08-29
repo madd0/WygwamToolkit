@@ -28,58 +28,15 @@ namespace Wygwam.Windows.Controls
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-    using System.Windows.Input;
     using System.Xml.Linq;
     using Wygwam.Windows.ViewModels;
 
     /// <summary>
     /// Provides a basic extended splash screen that follows Microsoft guidelines.
     /// </summary>
-    public class ExtendedSplashScreen : Control
+    public class ExtendedSplashScreen : BaseExtendedSplashScreen
     {
-        /// <summary>
-        /// Identifies the <see cref="P:Message"/> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty MessageProperty =
-            DependencyProperty.Register("Message", typeof(string), typeof(ExtendedSplashScreen), new PropertyMetadata(string.Empty));
-
-        /// <summary>
-        /// Identifies the <see cref="P:IsLoading"/> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty IsLoadingProperty =
-            DependencyProperty.Register("IsLoading", typeof(bool), typeof(ExtendedSplashScreen), new PropertyMetadata(true));
-
-        /// <summary>
-        /// Identifies the <see cref="P:Command"/> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty CommandProperty =
-            DependencyProperty.Register("Command", typeof(ICommand), typeof(ExtendedSplashScreen), new PropertyMetadata(null));
-
-        /// <summary>
-        /// Identifies the <see cref="P:CommandParameter"/> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty CommandParameterProperty =
-            DependencyProperty.Register("CommandParameter", typeof(object), typeof(ExtendedSplashScreen), new PropertyMetadata(null));
-
-        /// <summary>
-        /// Identifies the <see cref="P:NavigationParameter"/> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty NavigationParameterProperty =
-            DependencyProperty.Register("NavigationParameter", typeof(object), typeof(ExtendedSplashScreen), new PropertyMetadata(null));
-
-        /// <summary>
-        /// Identifies the <see cref="P:AdvancesAutomatically"/> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty AdvancesAutomaticallyProperty =
-            DependencyProperty.Register("AdvancesAutomatically", typeof(bool), typeof(ExtendedSplashScreen), new PropertyMetadata(true));
-
-        /// <summary>
-        /// Identifies the <see cref="P:IsDone"/> dependency property.
-        /// </summary>
-        public static readonly DependencyProperty IsDoneProperty =
-            DependencyProperty.Register("IsDone", typeof(bool), typeof(ExtendedSplashScreen), new PropertyMetadata(false, OnIsDoneChanged));
-
-        private static readonly TypeInfo _baseViewModelTypeInfo = typeof(BaseViewModel).GetTypeInfo();
+        private NavigationController _navigationController;
 
         private SplashScreen _splashScreen;
 
@@ -92,22 +49,15 @@ namespace Wygwam.Windows.Controls
 
         private Type _nextPage;
 
-        private TaskScheduler _uiScheduler;
-
-        private LaunchActivatedEventArgs _launchArgs;
-
-        private bool _mustLoadPreviousRunningState;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtendedSplashScreen"/> class.
         /// </summary>
         public ExtendedSplashScreen()
+            : base()
         {
             this.DefaultStyleKey = typeof(ExtendedSplashScreen);
 
             Window.Current.SizeChanged += this.OnResize;
-
-            _uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             this.LoadManifestData();
         }
@@ -115,13 +65,16 @@ namespace Wygwam.Windows.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtendedSplashScreen"/> class.
         /// </summary>
-        /// <param name="args">The <see cref="LaunchActivatedEventArgs"/> instance provided by the
-        /// <see cref="global::Windows.UI.Xaml.Application"/> when it was launched.</param>
+        /// <param name="navigationController">The navigation controller used to navigate away from the splash screen.</param>
+        /// <param name="args">The <see cref="IActivatedEventArgs"/> instance provided by the
+        /// application when it was launched.</param>
         /// <param name="nextPage">The type of the page to which the application will navigate when loading is done.</param>
         /// <param name="parameter">An optional navigation parameter.</param>
-        public ExtendedSplashScreen(LaunchActivatedEventArgs args, Type nextPage, object parameter = null)
+        public ExtendedSplashScreen(NavigationController navigationController, IActivatedEventArgs args, Type nextPage, object parameter = null)
             : this()
         {
+            _navigationController = navigationController;
+
             _nextPage = nextPage;
 
             this.NavigationParameter = parameter;
@@ -130,121 +83,25 @@ namespace Wygwam.Windows.Controls
         }
 
         /// <summary>
-        /// Gets or sets the loading operation.
-        /// </summary>
-        /// <value>
-        /// The loading operation.
-        /// </value>
-        /// <seealso cref="P:Command" />
-        /// <remarks>
-        ///   <para>This delegate will be called when the system splash screen has been dismissed
-        /// in order to perform loading operations.</para>
-        ///   <para>You can also use the class's <see cref="P:Command" /> property to execute loading operations.</para>
-        /// </remarks>
-        public Func<bool, Task> LoadingOperation { get; set; }
-
-        /// <summary>
         /// Gets or sets an object containing details about the launch request and process.
         /// </summary>
-        public LaunchActivatedEventArgs LaunchArgs
+        public override IActivatedEventArgs LaunchArgs
         {
             get
             {
-                return _launchArgs;
+                return base.LaunchArgs;
             }
-
             set
             {
-                _launchArgs = value;
+                base.LaunchArgs = value;
 
-                _mustLoadPreviousRunningState = _launchArgs.PreviousExecutionState == ApplicationExecutionState.Terminated;
-
-                _splashScreen = _launchArgs.SplashScreen;
+                _splashScreen = value.SplashScreen;
 
                 if (_splashScreen != null)
                 {
                     _splashScreen.Dismissed += this.OnSplashScreenDismissed;
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the splash screen advances automatically to the next
-        /// page once the <see cref="P:Command"/> or <see cref="P:LoadingOperation"/> have completed.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if the splash screen is automatically dismissed after the loading operations have
-        /// completed; otherwise, <c>false</c>. The defaul value is <c>true</c>.
-        /// </value>
-        /// <remarks>Although, by default, the extended splash screen will advance to the next page that 
-        /// was specified in its constructor, if you require finer control, you can set this property to <c>false</c>
-        /// and control when navigation occurs using the <see cref="P:IsDone"/> property.</remarks>
-        public bool AdvancesAutomatically
-        {
-            get { return (bool)GetValue(AdvancesAutomaticallyProperty); }
-            set { SetValue(AdvancesAutomaticallyProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether loading is done.
-        /// </summary>
-        /// <remarks>If <see cref="P:AdvancesAutomatically"/> has been set to <c>false</c>, setting
-        /// this property to <c>true</c> will trigger navigation to the next page.</remarks>
-        public bool IsDone
-        {
-            get { return (bool)GetValue(IsDoneProperty); }
-            set { SetValue(IsDoneProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the command that will execute the loading operations when the system splash screen
-        /// is dismissed.
-        /// </summary>
-        public ICommand Command
-        {
-            get { return (ICommand)GetValue(CommandProperty); }
-            set { SetValue(CommandProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets a parameter that will be passed on to the <see cref="P:Command"/> when it is executed.
-        /// </summary>
-        public object CommandParameter
-        {
-            get { return (object)GetValue(CommandParameterProperty); }
-            set { SetValue(CommandParameterProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the splash screen message.
-        /// </summary>
-        /// <remarks>The default template for the extended splash screen contains a 
-        /// <see cref="global::Windows.UI.Xaml.Controls.TextBlock"/> that displays this message.</remarks>
-        public string Message
-        {
-            get { return (string)GetValue(MessageProperty); }
-            set { SetValue(MessageProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the splash screen is waiting.
-        /// </summary>
-        /// <remarks>The default template for the extended splash screen contains a 
-        /// <see cref="global::Windows.UI.Xaml.Controls.ProgressRing"/> that is activated while this property
-        /// is <c>true</c>.</remarks>
-        public bool IsLoading
-        {
-            get { return (bool)GetValue(IsLoadingProperty); }
-            set { SetValue(IsLoadingProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value that will used as a parameter when the extended splash screen navigates to the next page.
-        /// </summary>
-        public object NavigationParameter
-        {
-            get { return (object)GetValue(NavigationParameterProperty); }
-            set { SetValue(NavigationParameterProperty, value); }
         }
 
         /// <summary>
@@ -282,67 +139,19 @@ namespace Wygwam.Windows.Controls
         {
         }
 
-        /// <summary>
-        /// Called when the <see cref="P:IsDone"/> dependency property changes.
-        /// </summary>
-        /// <param name="d">The object that triggered the event.</param>
-        /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
-        private static void OnIsDoneChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        protected override void MoveToNextPage()
         {
-            ((ExtendedSplashScreen)d).OnIsDoneChanged((bool)e.NewValue);
-        }
-
-        /// <summary>
-        /// Called when the <see cref="P:IsDone"/> dependency property changes.
-        /// </summary>
-        /// <param name="isDone">if set to <c>true</c>, loading has completed and the application should advance to the next page.</param>
-        private void OnIsDoneChanged(bool isDone)
-        {
-            if (isDone)
+            if (_baseViewModelTypeInfo.IsAssignableFrom(_nextPage.GetTypeInfo()))
             {
-                this.MoveToNextPage();
+                _navigationController.GoToInstance((BaseViewModel)this.NavigationParameter);
             }
-        }
-
-        /// <summary>
-        /// Loads the path to the splash screen and the background color from the application manifest.
-        /// </summary>
-        private void LoadManifestData()
-        {
-            var doc = XDocument.Load("AppxManifest.xml", LoadOptions.None);
-            var xname = XNamespace.Get("http://schemas.microsoft.com/appx/2010/manifest");
-
-            var splashScreenElement = doc.Descendants(xname + "SplashScreen").First();
-
-            var splashScreenPath = splashScreenElement.Attribute("Image").Value;
-
-            _splashScreenImagePath = new Uri(new Uri("ms-appx:///"), splashScreenPath);
-
-            XAttribute bgColor = null;
-
-            if ((bgColor = splashScreenElement.Attribute("BackgroundColor")) == null)
+            else
             {
-                bgColor = doc.Descendants(xname + "VisualElements").First().Attribute("BackgroundColor");
-            }
+                var rootFrame = new Frame();
 
-            _backgroundBrush = new SolidColorBrush(bgColor.Value.AsColor());
-        }
+                rootFrame.Navigate(_nextPage, this.NavigationParameter);
 
-        /// <summary>
-        /// Positions the extended splash screen image in the same location as the system splash screen image.
-        /// </summary>
-        private void PositionImage()
-        {
-            if (_splashScreenImage != null && _splashScreen != null)
-            {
-                var imgPos = _splashScreen.ImageLocation;
-
-                _splashScreenImage.SetValue(Canvas.LeftProperty, imgPos.X);
-                _splashScreenImage.SetValue(Canvas.TopProperty, imgPos.Y);
-                _splashScreenImage.Height = imgPos.Height;
-                _splashScreenImage.Width = imgPos.Width;
-
-                this.OnResize(imgPos);
+                Window.Current.Content = rootFrame;
             }
         }
 
@@ -385,88 +194,48 @@ namespace Wygwam.Windows.Controls
                         this.IsDone = true;
                     }
                 },
-                _uiScheduler);
+                this.UIScheduler);
         }
 
         /// <summary>
-        /// Moves to next page.
+        /// Loads the path to the splash screen and the background color from the application manifest.
         /// </summary>
-        private void MoveToNextPage()
+        private void LoadManifestData()
         {
-            if (_baseViewModelTypeInfo.IsAssignableFrom(_nextPage.GetTypeInfo()))
+            var doc = XDocument.Load("AppxManifest.xml", LoadOptions.None);
+            var xname = XNamespace.Get("http://schemas.microsoft.com/appx/2010/manifest");
+
+            var splashScreenElement = doc.Descendants(xname + "SplashScreen").First();
+
+            var splashScreenPath = splashScreenElement.Attribute("Image").Value;
+
+            _splashScreenImagePath = new Uri(new Uri("ms-appx:///"), splashScreenPath);
+
+            XAttribute bgColor = null;
+
+            if ((bgColor = splashScreenElement.Attribute("BackgroundColor")) == null)
             {
-                NavigationController.GoToInstance((BaseViewModel)this.NavigationParameter);
+                bgColor = doc.Descendants(xname + "VisualElements").First().Attribute("BackgroundColor");
             }
-            else
-            {
-                var rootFrame = new Frame();
 
-                rootFrame.Navigate(_nextPage, this.NavigationParameter);
-
-                Window.Current.Content = rootFrame;
-            }
+            _backgroundBrush = new SolidColorBrush(bgColor.Value.AsColor());
         }
 
         /// <summary>
-        /// Performs the loading action asynchronously.
+        /// Positions the extended splash screen image in the same location as the system splash screen image.
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.Threading.Tasks.Task" /> that will complete when both event handlers and the
-        /// <see cref="P:Command" /> have finished executing.
-        /// </returns>
-        /// <remarks>
-        ///   <para>This method will call any event handler listening to the <see cref="P:LoadingOperation" /> event
-        /// as well as execute the <see cref="P:Command" /> if one has been assigned.</para>
-        ///   <para>Both operations are performed on the UI thread to make UI updates less complex.</para>
-        /// </remarks>
-        private async Task PerformLoadingActionAsync()
+        private void PositionImage()
         {
-            TaskFactory uiFactory = new TaskFactory(_uiScheduler);
-
-            Task<Task> evenHandlerTask = uiFactory.StartNew(() =>
+            if (_splashScreenImage != null && _splashScreen != null)
             {
-                if (this.LoadingOperation != null)
-                {
-                    return this.LoadingOperation(_mustLoadPreviousRunningState);
-                }
-                else
-                {
-                    return Task.FromResult(false);
-                }
-            });
+                var imgPos = _splashScreen.ImageLocation;
 
-            Task<Task> commandTask = uiFactory.StartNew(() => this.ExecuteCommand());
+                _splashScreenImage.SetValue(Canvas.LeftProperty, imgPos.X);
+                _splashScreenImage.SetValue(Canvas.TopProperty, imgPos.Y);
+                _splashScreenImage.Height = imgPos.Height;
+                _splashScreenImage.Width = imgPos.Width;
 
-            await Task.WhenAll(
-                await evenHandlerTask,
-                await commandTask);
-        }
-
-        /// <summary>
-        /// Executes the <see cref="P:Command" /> if any.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.Threading.Tasks.Task" /> to simplify asynchronous programming.
-        /// </returns>
-        /// <remarks>
-        /// The method will call <see cref="M:ICommand.Execute" /> to execute the command, unless
-        /// it detects that the command provided is of type <see cref="AsyncDelegateCommand" />, in which
-        /// case it will await method <see cref="M:AsyncDelegateCommand.ExecuteAsync" />.
-        /// </remarks>
-        private async Task ExecuteCommand()
-        {
-            IAsyncExecutable asyncCommand;
-
-            if (this.Command != null)
-            {
-                if ((asyncCommand = this.Command as IAsyncExecutable) != null)
-                {
-                    await asyncCommand.ExecuteAsync(this.CommandParameter);
-                }
-                else
-                {
-                    this.Command.Execute(this.CommandParameter);
-                }
+                this.OnResize(imgPos);
             }
         }
     }

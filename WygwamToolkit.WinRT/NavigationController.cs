@@ -26,71 +26,49 @@ namespace Wygwam.Windows
     /// <summary>
     /// Provides MVVM-compatible navigation for Windows Store Apps.
     /// </summary>
-    public static class NavigationController
+    public class NavigationController : BaseNavigationController
     {
-        private static readonly Dictionary<Type, Type> _viewModelMap = new Dictionary<Type, Type>();
-
-        private static readonly Dictionary<Type, Func<object[], BaseViewModel>> _viewModelGenerators = new Dictionary<Type, Func<object[], BaseViewModel>>();
-
-        private static readonly Stack<BaseViewModel> _viewModels = new Stack<BaseViewModel>();
-
-        private static IWindowManager _windowManager = new DefaultWindowManager();
+        private readonly Dictionary<Type, Type> _viewModelMap = new Dictionary<Type, Type>();
 
         /// <summary>
-        /// Gets the current view model.
+        /// Initializes a new instance of the <see cref="NavigationController"/> class.
         /// </summary>
-        public static BaseViewModel CurrentViewModel
-        {
-            get
-            {
-                return _viewModels.Peek() as BaseViewModel;
-            }
-        }
+        public NavigationController()
+            : base(new DefaultWindowManager())
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NavigationController"/> class.
+        /// </summary>
+        /// <param name="windowManager">The window manager responsible for providing the <see cref="global::Windows.UI.Xaml.Controls.Frame"/>
+        /// used for navigation.</param>
+        public NavigationController(IWindowManager windowManager)
+            : base(windowManager)
+        { }
 
         /// <summary>
         /// Gets the current view.
         /// </summary>
-        public static Page CurrentView
+        public Page CurrentView
         {
             get
             {
-                var frame = _windowManager.NavigationFrame;
+                var frame = this.WindowManager.NavigationFrame;
 
                 return frame != null ? frame.Content as Page : null;
             }
         }
 
-        /// <summary>
-        /// Goes back in the navigation stack.
-        /// </summary>
-        public static void GoBack()
+        protected override bool IsViewModelRegistered(Type viewModelType)
         {
-            var frame = _windowManager.NavigationFrame;
+            return _viewModelMap.ContainsKey(viewModelType);
+        }
 
-            if (frame != null && frame.CanGoBack)
-            {
-                BaseViewModel viewModel = _viewModels.Pop();
+        protected override bool NavigateToType(Type viewModelType, object viewModelInstance)
+        {
+            var frame = this.WindowManager.EnsureNavigationFrameExists();
 
-                frame.GoBack();
-
-                var currentPage = frame.Content as Page;
-
-                if (currentPage != null)
-                {
-                    if (_viewModels.Count > 0)
-                    {
-                        currentPage.DataContext = _viewModels.Peek();
-                    }
-
-                    BaseViewModel currentViewModel = currentPage.DataContext as BaseViewModel;
-
-                    // TODO: Make sure this is necessary
-                    if (currentViewModel != null)
-                    {
-                        currentViewModel.Reload();
-                    }
-                }
-            }
+            return frame.Navigate(_viewModelMap[viewModelType], viewModelInstance);
         }
 
         /// <summary>
@@ -103,7 +81,7 @@ namespace Wygwam.Windows
         /// A new instance of the view model will be created at runtime by reflection when you
         /// navigate. The constructor of the view model will receive any parameters that you pass during navigation.
         /// </remarks>
-        public static void Register<TViewModel, TView>()
+        public void Register<TViewModel, TView>()
             where TViewModel : BaseViewModel
             where TView : Page
         {
@@ -120,7 +98,7 @@ namespace Wygwam.Windows
         /// <remarks>
         /// The same instance of the view model will used for every navigation operation.
         /// </remarks>
-        public static void Register<TViewModel, TView>(TViewModel instance)
+        public void Register<TViewModel, TView>(TViewModel instance)
             where TViewModel : BaseViewModel
             where TView : Page
         {
@@ -138,80 +116,15 @@ namespace Wygwam.Windows
         /// The provided delegate must return the desired instance of the view model. It will be provided an array of arguments
         /// that can be used to create or initialize the view model.
         /// </remarks>
-        public static void Register<TViewModel, TView>(Func<object[], TViewModel> @delegate)
+        public void Register<TViewModel, TView>(Func<object[], TViewModel> @delegate)
             where TViewModel : BaseViewModel
             where TView : Page
         {
             var type = typeof(TViewModel);
 
             _viewModelMap.Add(type, typeof(TView));
-            _viewModelGenerators.Add(type, @delegate);
-        }
 
-        /// <summary>
-        /// Navigates the application to the view corresponding to the specified view model.
-        /// </summary>
-        /// <typeparam name="TViewModel">The type of the desired view model.</typeparam>
-        /// <param name="args">An optional list of arguments that will be used to initialize the view model.</param>
-        /// <returns>
-        /// The instance of the view model that was used for navigation.
-        /// </returns>
-        /// <seealso cref="M:Register{TViewModel, TView}" />
-        /// <exception cref="System.ArgumentException">The specified view model type has no registered view.</exception>
-        /// <remarks>
-        /// The requested view model type must be registered with the
-        /// <see cref="M:Register{TViewModel, TView}" /> method before navigating.
-        /// </remarks>
-        public static TViewModel GoTo<TViewModel>(params object[] args)
-            where TViewModel : BaseViewModel
-        {
-            var type = typeof(TViewModel);
-
-            if (!_viewModelMap.ContainsKey(type))
-            {
-                throw new ArgumentException("The specified view model type has no registered view.");
-            }
-
-            var instance = _viewModelGenerators[type](args);
-
-            return GoToInstance<TViewModel>((TViewModel)instance);
-        }
-
-        /// <summary>
-        /// Navigates the application to the view corresponding to the specified view model.
-        /// </summary>
-        /// <typeparam name="TViewModel">The type of the desired view model.</typeparam>
-        /// <param name="instance">The instance of the view model that will be passed on to the view.</param>
-        /// <returns>
-        /// The instance of the view model that was used for navigation.
-        /// </returns>
-        /// <seealso cref="M:Register{TViewModel, TView}" />
-        /// <exception cref="System.ArgumentException">The specified view model type has no registered view.</exception>
-        /// <exception cref="System.Exception">Failed to navigate to requested page.</exception>
-        /// <remarks>
-        /// The requested view model type must be registered with the
-        /// <see cref="M:Register{TViewModel, TView}" /> method before navigating.
-        /// </remarks>
-        public static TViewModel GoToInstance<TViewModel>(TViewModel instance)
-            where TViewModel : BaseViewModel
-        {
-            var type = instance.GetType();
-
-            if (!_viewModelMap.ContainsKey(type))
-            {
-                throw new ArgumentException("The specified view model type has no registered view.");
-            }
-
-            _viewModels.Push(instance);
-
-            var frame = _windowManager.EnsureNavigationFrameExists();
-
-            if (!frame.Navigate(_viewModelMap[type], instance))
-            {
-                throw new Exception("Failed to navigate to requested page.");
-            }
-
-            return instance;
+            this.RegisterViewModelGenerator<TViewModel>(type, @delegate);
         }
 
         /// <summary>
@@ -228,7 +141,7 @@ namespace Wygwam.Windows
         /// <remarks>
         /// The requested view model type must be registered with the <see cref="M:Register{TViewModel, TView}" /> method before navigating.
         /// </remarks>
-        public static TViewModel Activate<TViewModel>(params object[] args)
+        public TViewModel Activate<TViewModel>(params object[] args)
             where TViewModel : BaseViewModel
         {
             var result = GoTo<TViewModel>(args);
@@ -248,14 +161,14 @@ namespace Wygwam.Windows
         /// <remarks>
         /// If no window manager is set, the controller uses and instance of <see cref="DefaultWindowManager" />.
         /// </remarks>
-        public static void SetWindowManager(IWindowManager manager)
+        public void SetWindowManager(IWindowManager manager)
         {
             if (manager == null)
             {
                 throw new ArgumentNullException("manager", "The window manager cannot be null.");
             }
 
-            _windowManager = manager;
+            this.WindowManager = manager;
         }
     }
 }

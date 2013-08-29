@@ -22,7 +22,11 @@ namespace Wygwam.Windows
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+#if NETFX_CORE
     using global::Windows.UI.Xaml.Controls;
+#elif WINDOWS_PHONE
+    using System.Windows.Controls;
+#endif
 
     /// <summary>
     /// Provides methods to interact with a Store app's main <see cref="global::Windows.UI.Xaml.Window"/>.
