@@ -79,6 +79,8 @@ namespace Wygwam.Windows.Phone
                     store.Add(key, data);
                 }
 
+                store.Save();
+
                 return true;
             });
         }
