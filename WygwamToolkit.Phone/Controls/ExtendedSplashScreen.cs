@@ -78,7 +78,14 @@ namespace Wygwam.Windows.Controls
 
         protected override void MoveToNextPage()
         {
-            _navigationController.GoToType(_nextPage);
+            if (_baseViewModelTypeInfo.IsAssignableFrom(_nextPage.GetTypeInfo()))
+            {
+                _navigationController.GoToInstance((BaseViewModel)this.NavigationParameter);
+            }
+            else
+            {
+                _navigationController.GoToType(_nextPage);
+            }
 
             var nextPage = _navigationController.CurrentView;
 
