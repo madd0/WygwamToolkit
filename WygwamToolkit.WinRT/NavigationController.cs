@@ -69,7 +69,7 @@ namespace Wygwam.Windows
 
             if (frame != null && frame.CanGoBack)
             {
-                BaseViewModel viewModel = _viewModels.Pop();
+                IDisposable oldViewModel = _viewModels.Pop() as IDisposable;
 
                 frame.GoBack();
 
@@ -89,6 +89,11 @@ namespace Wygwam.Windows
                     {
                         currentViewModel.Reload();
                     }
+                }
+
+                if (oldViewModel != null)
+                {
+                    oldViewModel.Dispose();
                 }
             }
         }
