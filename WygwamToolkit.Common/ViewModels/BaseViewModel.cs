@@ -86,5 +86,28 @@ namespace Wygwam.Windows.ViewModels
         {
             return _defaultTask;
         }
+
+        /// <summary>
+        /// Called when the underlying view has been loaded by the navigation system.
+        /// </summary>
+        /// <returns>An instance of <see cref="System.Threading.Tasks.Task"/> that helps in
+        /// asynchronous programming.</returns>
+        public virtual Task OnArrived()
+        {
+            return _defaultTask;
+        }
+
+        /// <summary>
+        /// Rehydrates a view model instance with the specified parameters.
+        /// </summary>
+        /// <param name="parameters">The parameters used to rehydrate the instance.</param>
+        /// <remarks>This method is mainly called on singleton view models that were registered using
+        /// <see cref="M:NavigationController.Register{TViewModel, TView}(TViewModel)"/>.</remarks>
+        /// <returns>An instance of <see cref="System.Threading.Tasks.Task"/> that helps in
+        /// asynchronous programming.</returns>
+        public virtual Task Rehydrate(params object[] parameters)
+        {
+            return _defaultTask;
+        }
     }
 }
