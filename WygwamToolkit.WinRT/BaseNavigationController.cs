@@ -97,7 +97,7 @@ namespace Wygwam.Windows
         {
             if (this.CanGoBack)
             {
-                BaseViewModel viewModel = _viewModels.Pop();
+                IDisposable oldViewModel = _viewModels.Pop() as IDisposable;
 
                 var currentPage = this.GoBackInternal();
 
@@ -115,6 +115,11 @@ namespace Wygwam.Windows
                     {
                         currentViewModel.Reload();
                     }
+                }
+
+                if (oldViewModel != null)
+                {
+                    oldViewModel.Dispose();
                 }
             }
         }
