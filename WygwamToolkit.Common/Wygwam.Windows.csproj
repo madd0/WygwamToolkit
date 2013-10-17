@@ -59,6 +59,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Storage\StorageType.cs" />
     <Compile Include="Storage\XmlDataSerializer.cs" />
+    <Compile Include="Store\RatingReminderAction.cs" />
+    <Compile Include="Store\RatingReminderResult.cs" />
+    <Compile Include="Store\RatingReminder.cs" />
+    <Compile Include="Store\RatingReminderSettings.cs" />
     <Compile Include="Tools\AsyncAction.cs" />
     <Compile Include="Tools\AsyncLock.cs" />
     <Compile Include="Tools\AsyncSemaphore.cs" />

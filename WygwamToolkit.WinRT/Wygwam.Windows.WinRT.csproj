@@ -126,6 +126,7 @@
     <Compile Include="NavigationController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SmartDispatcher.cs" />
+    <Compile Include="Store\RatingReminder.cs" />
     <Compile Include="Timer.cs" />
   </ItemGroup>
   <ItemGroup>
