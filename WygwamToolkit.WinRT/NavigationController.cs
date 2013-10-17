@@ -46,19 +46,6 @@ namespace Wygwam.Windows
             : base(windowManager)
         { }
 
-        /// <summary>
-        /// Gets the current view.
-        /// </summary>
-        public Page CurrentView
-        {
-            get
-            {
-                var frame = this.WindowManager.NavigationFrame;
-
-                return frame != null ? frame.Content as Page : null;
-            }
-        }
-
         protected override bool IsViewModelRegistered(Type viewModelType)
         {
             return _viewModelMap.ContainsKey(viewModelType);

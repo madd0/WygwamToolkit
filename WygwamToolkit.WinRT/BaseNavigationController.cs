@@ -74,7 +74,9 @@ namespace Wygwam.Windows
         {
             get
             {
-                return _windowManager.NavigationFrame.Content as Page;
+                var frame = _windowManager.NavigationFrame;
+
+                return frame != null ? frame.Content as Page : null;
             }
         }
 
