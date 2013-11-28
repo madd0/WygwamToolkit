@@ -18,8 +18,13 @@
 using Windows.Networking.Connectivity;
 using Wygwam.Windows.Networking;
 
+#if NETFX_CORE
 namespace Wygwam.Windows.WinRT
+#else
+namespace Wygwam.Windows.Phone
+#endif
 {
+
     /// <summary>
     /// Provide access to network connection information.
     /// </summary>
