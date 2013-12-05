@@ -89,6 +89,9 @@
     <Compile Include="..\WygwamToolkit.WinRT\Controls\BaseExtendedSplashScreen.cs">
       <Link>Controls\BaseExtendedSplashScreen.cs</Link>
     </Compile>
+    <Compile Include="..\WygwamToolkit.WinRT\Controls\BasePage.cs">
+      <Link>Controls\BasePage.cs</Link>
+    </Compile>
     <Compile Include="..\WygwamToolkit.WinRT\Extensions\VisualState.cs">
       <Link>Extensions\VisualState.cs</Link>
     </Compile>

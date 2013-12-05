@@ -17,15 +17,25 @@
 
 namespace Wygwam.Windows.Controls
 {
+#if NETFX_CORE
     using global::Windows.UI.Xaml;
     using global::Windows.UI.Xaml.Controls;
     using global::Windows.UI.Xaml.Navigation;
+#elif WINDOWS_PHONE
+    using Microsoft.Phone.Controls;
+    using System.Windows;
+    using System.Windows.Navigation;
+#endif
     using Wygwam.Windows.ViewModels;
 
     /// <summary>
     /// TODO: Provide summary section in the documentation header.
     /// </summary>
+#if NETFX_CORE
     public class BasePage : Page
+#else
+    public class BasePage : PhoneApplicationPage
+#endif
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BasePage"/> class.
@@ -57,8 +67,9 @@ namespace Wygwam.Windows.Controls
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-
+#if NETFX_CORE
             this.DataContext = e.Parameter;
+#endif
         }
 
         /// <summary>
