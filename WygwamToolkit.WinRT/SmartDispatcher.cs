@@ -44,14 +44,17 @@ namespace Wygwam.Windows
 
         public static void Initialize()
         {
-            _dispatcher = Window.Current.CoreWindow.Dispatcher;
+            if (!IsDesigner)
+            {
+                _dispatcher = Window.Current.CoreWindow.Dispatcher;
+            }
         }
 
         public static bool CanExecuteOnCurrentThread()
         {
             RequireInstance();
 
-            return _dispatcher.HasThreadAccess;
+            return IsDesigner || _dispatcher.HasThreadAccess;
         }
 
         public static async Task BeginInvoke(Action action)
@@ -60,7 +63,7 @@ namespace Wygwam.Windows
 
             // If the current thread is the user interface thread, skip the
             // dispatcher and directly invoke the Action.
-            if (CanExecuteOnCurrentThread() || IsDesigner)
+            if (CanExecuteOnCurrentThread())
             {
                 action();
             }
@@ -72,7 +75,7 @@ namespace Wygwam.Windows
 
         private static void RequireInstance()
         {
-            if (_dispatcher == null)
+            if (_dispatcher == null && !IsDesigner)
             {
                 throw new InvalidOperationException("SmartDispatcher must be initialized before it is used.");
             }
