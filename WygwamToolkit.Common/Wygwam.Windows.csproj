@@ -45,8 +45,9 @@
     <Compile Include="Input\DelegateCommand{T}.cs" />
     <Compile Include="Input\DelegateCommand.cs" />
     <Compile Include="Input\IAsyncExecutable.cs" />
+    <Compile Include="Location\GeoPosition.cs" />
+    <Compile Include="Location\ILocationManager.cs" />
     <Compile Include="Managers\BaseManifestManager.cs" />
-    <Compile Include="Managers\ILocationManager.cs" />
     <Compile Include="Managers\IManifestManager.cs" />
     <Compile Include="Networking\InternetConnectionType.cs" />
     <Compile Include="Networking\NetworkChangedEventArgs.cs" />

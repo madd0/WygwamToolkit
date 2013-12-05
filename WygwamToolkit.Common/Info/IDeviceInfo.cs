@@ -12,19 +12,12 @@
 //     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //     See the License for the specific language governing permissions and
 //     limitations under the License.
-//
-//     Based on the <c>BindableBase</c> class provided by Microsoft in
-//     Windows Store Application project templates.
 // </copyright>
 //-----------------------------------------------------------------------
 
 namespace Wygwam.Windows.Info
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// Instance grouping many information for the device

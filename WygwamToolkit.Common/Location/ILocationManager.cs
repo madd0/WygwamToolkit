@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="SecurityPropertyAttribute.cs" company="Wygwam">
+// <copyright file="ILocationManager.cs" company="Wygwam">
 //     Copyright (c) 2013 Wygwam.
 //     Licensed under the Microsoft Public License (Ms-PL) (the "License");
 //     you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Wygwam.Windows.Security
+namespace Wygwam.Windows.Location
 {
-    using System;
+    using System.Threading.Tasks;
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true)]
-    public class SecurityPropertyAttribute : Attribute
+    public interface ILocationManager
     {
+        GeoPosition LastKnowPosition { get; set; }
+
+        Task<GeoPosition> GetLocationAsync();
+        Task<bool> AskForRightAsync();
     }
 }

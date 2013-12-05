@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using Windows.Devices.Geolocation;
-using WygwamToolkit.Common.Managers;
+using Wygwam.Windows.Location;
 
 namespace WygwamToolkit.Phone.Managers
 {
@@ -10,17 +10,14 @@ namespace WygwamToolkit.Phone.Managers
     {
         public GeoPosition LastKnowPosition { get; set; }
 
-        public async Task<bool> AskForRightAsync()
+        public Task<bool> AskForRightAsync()
         {
             MessageBoxResult result =
             MessageBox.Show("L'application a besoin de connaitre votre position, êtes vous d'accord?",
             "Position",
             MessageBoxButton.OKCancel);
 
-            if (result == MessageBoxResult.OK)
-                return true;
-            else
-                return false;
+            return Task.FromResult<bool>(result == MessageBoxResult.OK);
         }
 
         public async Task<GeoPosition> GetLocationAsync()

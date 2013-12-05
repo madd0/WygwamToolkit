@@ -211,9 +211,9 @@
             return _current;
         }
 
-        protected virtual async Task<IManifestManager> OnLoading()
+        protected virtual Task<IManifestManager> OnLoading()
         {
-            return null;
+            return Task.FromResult<IManifestManager>(null);
         }
     }
 }

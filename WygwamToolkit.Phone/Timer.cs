@@ -17,7 +17,6 @@
 namespace Wygwam.Windows
 {
     using System;
-
     using System.Windows.Threading;
 
     /// <summary>
@@ -28,7 +27,6 @@ namespace Wygwam.Windows
     {
         private DispatcherTimer _timer;
         private TimeSpan _interval;
-        private bool _isEnabled;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Timer"/> class.

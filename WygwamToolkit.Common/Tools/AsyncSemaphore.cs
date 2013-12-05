@@ -4,14 +4,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Wygwam.Windows
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     public class AsyncSemaphore
     {
         private readonly static Task s_completed = Task.FromResult(true);

@@ -1,18 +1,18 @@
 ﻿namespace Wygwam.Windows.Phone.Security
 {
+    using global::Windows.Phone.System.Analytics;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
     using System.Linq;
+    using System.Reflection;
+    using System.Runtime.Serialization.Json;
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
-    using global::Windows.Phone.System.Analytics;
-    using Wygwam.Windows.Security;
-    using System.Reflection;
     using Wygwam.Windows.Phone.Managers;
-    using System.Diagnostics;
-    using System.Runtime.Serialization.Json;
-    using System.IO;
+    using Wygwam.Windows.Security;
     using Wygwam.Windows.Tools;
 
     /// <summary>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
-using WygwamToolkit.Common.Managers;
+using Wygwam.Windows.Location;
 
 namespace WygwamToolkit.WinRT.Managers
 {

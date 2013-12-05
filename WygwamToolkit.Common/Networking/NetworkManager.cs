@@ -15,10 +15,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-
 namespace Wygwam.Windows.Networking
 {
+    using System;
+
     /// <summary>
     /// Serves as a base for platform-specific classes that provide access to network connection information.
     /// </summary>

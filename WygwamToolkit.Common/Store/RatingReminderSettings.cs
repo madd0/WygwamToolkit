@@ -15,10 +15,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Collections.Generic;
-using System.Linq;
 namespace Wygwam.Windows.Store
 {
+    using System.Collections.Generic;
+    using System.Linq;
+
     /// <summary>
     /// Provides settings to an instance of <see cref="T:IRatingReminder"/>.
     /// </summary>
