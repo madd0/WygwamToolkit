@@ -19,8 +19,10 @@ namespace Wygwam.Windows
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Controls;
+    using System.Windows.Navigation;
     using Wygwam.Windows.ViewModels;
 
     /// <summary>
@@ -33,6 +35,10 @@ namespace Wygwam.Windows
         private Frame _currentNavigationFrame;
 
         private object _pendingNavigationParameter;
+
+        private bool _isInternalGoBack;
+
+        private object _lastNavigatedView;
 
         /// <summary>
         /// Associates a view type with a view model type.
@@ -104,7 +110,14 @@ namespace Wygwam.Windows
 
             _pendingNavigationParameter = viewModelInstance;
 
-            return frame.Navigate(_viewModelMap[viewModelType]);
+            var navigationResult = frame.Navigate(_viewModelMap[viewModelType]);
+
+            if (navigationResult)
+            {
+                _lastNavigatedView = frame.Content;
+            }
+
+            return navigationResult;
         }
 
         protected override bool IsViewModelRegistered(Type viewModelType)
@@ -116,12 +129,48 @@ namespace Wygwam.Windows
         {
             var navigationTarget = e.Content as FrameworkElement;
 
-            if (navigationTarget != null)
+            if (e.NavigationMode == NavigationMode.Back)
             {
-                navigationTarget.DataContext = _pendingNavigationParameter;
+                if (!_isInternalGoBack && e.Content.Equals(_lastNavigatedView))
+                {
+                    this.UnwrapNavigationStack(() => Task.FromResult(navigationTarget));
+                }
             }
+            else
+            {
+                if (navigationTarget != null)
+                {
+                    navigationTarget.DataContext = _pendingNavigationParameter;
+                }
 
-            _pendingNavigationParameter = null;
+                _pendingNavigationParameter = null;
+            }
+        }
+
+        protected override Task<FrameworkElement> GoBackInternalAsync()
+        {
+            _isInternalGoBack = true;
+
+            NavigatedEventHandler backNavigationHandler = null;
+
+            TaskCompletionSource<FrameworkElement> taskSource = new TaskCompletionSource<FrameworkElement>();
+
+            var frame = this.WindowManager.NavigationFrame;
+
+            backNavigationHandler = (sender, args) =>
+            {
+                taskSource.SetResult(args.Content as FrameworkElement);
+
+                _isInternalGoBack = false;
+
+                frame.Navigated -= backNavigationHandler;
+            };
+
+            frame.Navigated += backNavigationHandler;
+
+            frame.GoBack();
+
+            return taskSource.Task;
         }
     }
 }

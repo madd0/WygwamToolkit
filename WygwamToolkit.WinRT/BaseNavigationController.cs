@@ -99,30 +99,35 @@ namespace Wygwam.Windows
         {
             if (this.CanGoBack)
             {
-                IDisposable oldViewModel = _viewModels.Pop() as IDisposable;
+                this.UnwrapNavigationStack(this.GoBackInternalAsync);
+            }
+        }
 
-                var currentPage = this.GoBackInternal();
+        protected async void UnwrapNavigationStack(Func<Task<FrameworkElement>> navigationAction)
+        {
+            IDisposable oldViewModel = _viewModels.Pop() as IDisposable;
 
-                if (currentPage != null)
+            var currentPage = await navigationAction();
+
+            if (currentPage != null)
+            {
+                if (_viewModels.Count > 0)
                 {
-                    if (_viewModels.Count > 0)
-                    {
-                        currentPage.DataContext = _viewModels.Peek();
-                    }
-
-                    BaseViewModel currentViewModel = currentPage.DataContext as BaseViewModel;
-
-                    // TODO: Make sure this is necessary
-                    if (currentViewModel != null)
-                    {
-                        currentViewModel.Reload();
-                    }
+                    currentPage.DataContext = _viewModels.Peek();
                 }
 
-                if (oldViewModel != null)
+                BaseViewModel currentViewModel = currentPage.DataContext as BaseViewModel;
+
+                // TODO: Make sure this is necessary
+                if (currentViewModel != null)
                 {
-                    oldViewModel.Dispose();
+                    await Task.Run(async () => await currentViewModel.Reload());
                 }
+            }
+
+            if (oldViewModel != null)
+            {
+                oldViewModel.Dispose();
             }
         }
 
@@ -211,7 +216,7 @@ namespace Wygwam.Windows
 
             var instance = _viewModelGenerators[viewModelType](args);
 
-            if (this.NavigateToType(viewModelType , instance))
+            if (this.NavigateToType(viewModelType, instance))
             {
                 _viewModels.Push(instance);
             }
@@ -223,13 +228,13 @@ namespace Wygwam.Windows
             return instance;
         }
 
-        protected virtual FrameworkElement GoBackInternal()
+        protected virtual Task<FrameworkElement> GoBackInternalAsync()
         {
             var frame = this.WindowManager.NavigationFrame;
 
             frame.GoBack();
 
-            return frame.Content as FrameworkElement;
+            return Task.FromResult(frame.Content as FrameworkElement);
         }
 
         protected abstract bool NavigateToType(Type viewModelType, object viewModelInstance);
