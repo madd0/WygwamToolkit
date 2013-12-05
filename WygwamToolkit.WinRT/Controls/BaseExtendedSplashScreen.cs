@@ -88,8 +88,6 @@ namespace Wygwam.Windows.Controls
 
         protected static readonly TypeInfo _baseViewModelTypeInfo = typeof(BaseViewModel).GetTypeInfo();
 
-        private TaskScheduler _uiScheduler;
-
         private IActivatedEventArgs _launchArgs;
 
         private bool _mustLoadPreviousRunningState;
@@ -99,16 +97,10 @@ namespace Wygwam.Windows.Controls
         /// </summary>
         public BaseExtendedSplashScreen()
         {
-            this.UIScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-        }
-
-        /// <summary>
-        /// Gets the scheduler that can be used to execute tasks on the UI thread.
-        /// </summary>
-        public TaskScheduler UIScheduler
-        {
-            get { return _uiScheduler; }
-            private set { _uiScheduler = value; }
+            if(!SmartDispatcher.IsInitialized)
+            {
+                SmartDispatcher.Initialize();
+            }
         }
 
         /// <summary>
@@ -270,25 +262,24 @@ namespace Wygwam.Windows.Controls
         /// </remarks>
         protected async Task PerformLoadingActionAsync()
         {
-            TaskFactory uiFactory = new TaskFactory(this.UIScheduler);
+            Task delegateTask = Task.FromResult(false);
 
-            Task<Task> evenHandlerTask = uiFactory.StartNew(() =>
+            await SmartDispatcher.BeginInvoke(() =>
             {
                 if (this.LoadingOperation != null)
                 {
-                    return this.LoadingOperation(_mustLoadPreviousRunningState);
-                }
-                else
-                {
-                    return Task.FromResult(false);
+                    delegateTask = this.LoadingOperation(_mustLoadPreviousRunningState);
                 }
             });
 
-            Task<Task> commandTask = uiFactory.StartNew(() => this.ExecuteCommand());
+            Task commandTask = Task.FromResult(false);
 
-            await Task.WhenAll(
-                await evenHandlerTask,
-                await commandTask);
+            await SmartDispatcher.BeginInvoke(() =>
+            {
+                commandTask = this.ExecuteCommand();
+            });
+
+            await Task.WhenAll(delegateTask, commandTask);
         }
 
         /// <summary>
@@ -302,7 +293,7 @@ namespace Wygwam.Windows.Controls
         /// it detects that the command provided is of type <see cref="AsyncDelegateCommand" />, in which
         /// case it will await method <see cref="M:AsyncDelegateCommand.ExecuteAsync" />.
         /// </remarks>
-        private async Task ExecuteCommand()
+        private Task ExecuteCommand()
         {
             IAsyncExecutable asyncCommand;
 
@@ -310,12 +301,16 @@ namespace Wygwam.Windows.Controls
             {
                 if ((asyncCommand = this.Command as IAsyncExecutable) != null)
                 {
-                    await asyncCommand.ExecuteAsync(this.CommandParameter);
+                    return asyncCommand.ExecuteAsync(this.CommandParameter);
                 }
                 else
                 {
-                    this.Command.Execute(this.CommandParameter);
+                    return Task.Run(() => this.Command.Execute(this.CommandParameter));
                 }
+            }
+            else
+            {
+                return Task.FromResult(false);
             }
         }
     }

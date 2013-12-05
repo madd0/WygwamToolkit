@@ -34,15 +34,13 @@ namespace Wygwam.Windows.Controls
         public ExtendedSplashScreen()
         {
             this.FontFamily = (FontFamily)Application.Current.Resources["PhoneFontFamilyNormal"];
-                          this.FontSize=(double)Application.Current.Resources["PhoneFontSizeNormal"];
-                          this.Foreground=(Brush)Application.Current.Resources["PhoneForegroundBrush"];
-            
+            this.FontSize = (double)Application.Current.Resources["PhoneFontSizeNormal"];
+            this.Foreground = (Brush)Application.Current.Resources["PhoneForegroundBrush"];
+
             this.Orientation = PageOrientation.Portrait;
             this.SupportedOrientations = SupportedPageOrientation.Portrait;
 
             this.SetValue(SystemTray.IsVisibleProperty, false);
-
-            this.Loaded += this.OnLoaded;
         }
 
         /// <summary>
@@ -63,17 +61,16 @@ namespace Wygwam.Windows.Controls
             this.NavigationParameter = parameter;
         }
 
-        private async void OnLoaded(object sender, RoutedEventArgs e)
+        protected async override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
-            await this.PerformLoadingActionAsync().ContinueWith(
-                _ =>
-                {
-                    if (this.AdvancesAutomatically)
-                    {
-                        this.IsDone = true;
-                    }
-                },
-                this.UIScheduler);
+            base.OnNavigatedTo(e);
+
+            await this.PerformLoadingActionAsync();
+
+            if (this.AdvancesAutomatically)
+            {
+                this.IsDone = true;
+            }
         }
 
         protected override void MoveToNextPage()

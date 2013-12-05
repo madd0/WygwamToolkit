@@ -186,15 +186,15 @@ namespace Wygwam.Windows.Controls
         /// <param name="e">The event data.</param>
         private async void OnSplashScreenDismissed(SplashScreen sender, object e)
         {
-            await this.PerformLoadingActionAsync().ContinueWith(
-                _ =>
+            await this.PerformLoadingActionAsync();
+
+            await SmartDispatcher.BeginInvoke(() =>
+            {
+                if (this.AdvancesAutomatically)
                 {
-                    if (this.AdvancesAutomatically)
-                    {
-                        this.IsDone = true;
-                    }
-                },
-                this.UIScheduler);
+                    this.IsDone = true;
+                }
+            });
         }
 
         /// <summary>
