@@ -93,6 +93,50 @@ namespace Wygwam.Windows
             this.RegisterViewModelGenerator<TViewModel>(type, @delegate);
         }
 
+        public async void GoHome()
+        {
+            _currentNavigationFrame.Navigated -= this.OnFrameNavigated;
+
+            var navigationService = ((Page)_currentNavigationFrame.Content).NavigationService;
+            
+            while (this.ViewModelNavigationStack.Count > 2)
+            {
+                navigationService.RemoveBackEntry();
+
+                var disposable = this.ViewModelNavigationStack.Pop() as IDisposable;
+
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+            }
+
+            if (this.ViewModelNavigationStack.Count > 1)
+            {
+                await this.GoBackInternalAsync();
+
+                var disposable = this.ViewModelNavigationStack.Pop() as IDisposable;
+
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+            }
+
+            _currentNavigationFrame.Navigated += this.OnFrameNavigated;
+
+            _lastNavigatedView = _currentNavigationFrame.Content;
+
+            var homeView = _currentNavigationFrame.Content as FrameworkElement;
+
+            if (homeView != null)
+            {
+                homeView.DataContext = this.ViewModelNavigationStack.Peek();
+            }
+
+            await this.ViewModelNavigationStack.Peek().Reload();
+        }
+
         protected override bool NavigateToType(Type viewModelType, object viewModelInstance)
         {
             var frame = this.WindowManager.EnsureNavigationFrameExists();
@@ -131,7 +175,7 @@ namespace Wygwam.Windows
 
             if (e.NavigationMode == NavigationMode.Back)
             {
-                if (!_isInternalGoBack && e.Content.Equals(_lastNavigatedView))
+                if (!_isInternalGoBack && object.Equals(e.Content, _lastNavigatedView))
                 {
                     this.UnwrapNavigationStack(() => Task.FromResult(navigationTarget));
                 }
@@ -147,7 +191,7 @@ namespace Wygwam.Windows
             }
         }
 
-        protected override Task<FrameworkElement> GoBackInternalAsync()
+        protected override async Task<FrameworkElement> GoBackInternalAsync()
         {
             _isInternalGoBack = true;
 
@@ -155,22 +199,25 @@ namespace Wygwam.Windows
 
             TaskCompletionSource<FrameworkElement> taskSource = new TaskCompletionSource<FrameworkElement>();
 
-            var frame = this.WindowManager.NavigationFrame;
-
-            backNavigationHandler = (sender, args) =>
+            await SmartDispatcher.BeginInvoke(() =>
             {
-                taskSource.SetResult(args.Content as FrameworkElement);
+                var frame = this.WindowManager.NavigationFrame;
 
-                _isInternalGoBack = false;
+                backNavigationHandler = (sender, args) =>
+                {
+                    taskSource.SetResult(args.Content as FrameworkElement);
 
-                frame.Navigated -= backNavigationHandler;
-            };
+                    _isInternalGoBack = false;
 
-            frame.Navigated += backNavigationHandler;
+                    frame.Navigated -= backNavigationHandler;
+                };
 
-            frame.GoBack();
+                frame.Navigated += backNavigationHandler;
 
-            return taskSource.Task;
+                frame.GoBack();
+            });
+
+            return await taskSource.Task;
         }
     }
 }
