@@ -38,8 +38,6 @@ namespace Wygwam.Windows
 
         private bool _isInternalGoBack;
 
-        private object _lastNavigatedView;
-
         /// <summary>
         /// Associates a view type with a view model type.
         /// </summary>
@@ -98,7 +96,7 @@ namespace Wygwam.Windows
             _currentNavigationFrame.Navigated -= this.OnFrameNavigated;
 
             var navigationService = ((Page)_currentNavigationFrame.Content).NavigationService;
-            
+
             while (this.ViewModelNavigationStack.Count > 2)
             {
                 navigationService.RemoveBackEntry();
@@ -124,8 +122,6 @@ namespace Wygwam.Windows
             }
 
             _currentNavigationFrame.Navigated += this.OnFrameNavigated;
-
-            _lastNavigatedView = _currentNavigationFrame.Content;
 
             var homeView = _currentNavigationFrame.Content as FrameworkElement;
 
@@ -156,11 +152,6 @@ namespace Wygwam.Windows
 
             var navigationResult = frame.Navigate(_viewModelMap[viewModelType]);
 
-            if (navigationResult)
-            {
-                _lastNavigatedView = frame.Content;
-            }
-
             return navigationResult;
         }
 
@@ -175,19 +166,24 @@ namespace Wygwam.Windows
 
             if (e.NavigationMode == NavigationMode.Back)
             {
-                if (!_isInternalGoBack && object.Equals(e.Content, _lastNavigatedView))
+                if (e.IsNavigationInitiator && !_isInternalGoBack)
                 {
                     this.UnwrapNavigationStack(() => Task.FromResult(navigationTarget));
                 }
             }
             else
             {
-                if (navigationTarget != null)
+                // _pendingNavigationParameter is only null if the toolkit didn't initiate navigation
+                if (_pendingNavigationParameter == null)
+                {
+                    // push dummy view model so that the back stack is unwrapped properly later
+                    this.ViewModelNavigationStack.Push(new BaseViewModel());
+                }
+                else if (navigationTarget != null)
                 {
                     navigationTarget.DataContext = _pendingNavigationParameter;
+                    _pendingNavigationParameter = null;
                 }
-
-                _pendingNavigationParameter = null;
             }
         }
 
