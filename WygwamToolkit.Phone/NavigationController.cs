@@ -162,6 +162,12 @@ namespace Wygwam.Windows
 
         private void OnFrameNavigated(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
+            // navigating to null means that we've navigated outside the app, no need to touch our internal stack
+            if (e.Content == null)
+            {
+                return;
+            }
+
             var navigationTarget = e.Content as FrameworkElement;
 
             if (e.NavigationMode == NavigationMode.Back)
